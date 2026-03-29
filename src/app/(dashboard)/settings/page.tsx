@@ -5,19 +5,12 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Copy, Check, Plus, Trash2, AlertCircle, Bot, Save, Eye, EyeOff } from 'lucide-react'
+import { Copy, Check, Trash2, AlertCircle, Bot, Save, Eye, EyeOff } from 'lucide-react'
 import { AIModelType, AI_MODEL_OPTIONS } from '@/types'
-
-interface Project {
-  _id: string
-  name: string
-  description?: string
-  shareLink: string
-}
+import { useProject } from '@/contexts/project-context'
 
 interface AIConfig {
   enabled: boolean
@@ -29,10 +22,8 @@ interface AIConfig {
 
 export default function SettingsPage() {
   const router = useRouter()
-  const [projects, setProjects] = useState<Project[]>([])
+  const { projects, loading: projectLoading, refreshProjects } = useProject()
   const [loading, setLoading] = useState(true)
-  const [newProjectName, setNewProjectName] = useState('')
-  const [newProjectDescription, setNewProjectDescription] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -47,26 +38,6 @@ export default function SettingsPage() {
   const [aiSaving, setAISaving] = useState(false)
   const [aiSaved, setAISaved] = useState(false)
   const [showApiKey, setShowApiKey] = useState(false)
-
-  const fetchProjects = useCallback(async () => {
-    try {
-      const res = await fetch('/api/projects')
-      if (res.ok) {
-        const data = await res.json()
-        setProjects(data)
-        setError(null)
-      } else if (res.status === 401) {
-        router.push('/login')
-      } else {
-        setError('加载失败，请稍后重试')
-      }
-    } catch (error) {
-      console.error('获取项目失败:', error)
-      setError('网络错误，请检查连接')
-    } finally {
-      setLoading(false)
-    }
-  }, [router])
 
   const fetchAIConfig = useCallback(async () => {
     try {
@@ -87,33 +58,14 @@ export default function SettingsPage() {
   }, [])
 
   useEffect(() => {
-    fetchProjects()
-    fetchAIConfig()
-  }, [fetchProjects, fetchAIConfig])
-
-  const handleCreateProject = async () => {
-    if (!newProjectName.trim()) return
-
-    try {
-      const res = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newProjectName,
-          description: newProjectDescription,
-        }),
-      })
-
-      if (res.ok) {
-        const project = await res.json()
-        setProjects([...projects, project])
-        setNewProjectName('')
-        setNewProjectDescription('')
-      }
-    } catch (error) {
-      console.error('创建项目失败:', error)
+    if (!projectLoading) {
+      setLoading(false)
     }
-  }
+  }, [projectLoading])
+
+  useEffect(() => {
+    fetchAIConfig()
+  }, [fetchAIConfig])
 
   const handleDeleteProject = async (projectId: string) => {
     if (!confirm('确定要删除这个项目吗？')) return
@@ -124,7 +76,7 @@ export default function SettingsPage() {
       })
 
       if (res.ok) {
-        setProjects(projects.filter((p) => p._id !== projectId))
+        refreshProjects()
       }
     } catch (error) {
       console.error('删除项目失败:', error)
@@ -317,44 +269,14 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>创建新项目</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="projectName">项目名称</Label>
-            <Input
-              id="projectName"
-              value={newProjectName}
-              onChange={(e) => setNewProjectName(e.target.value)}
-              placeholder="输入项目名称"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="projectDescription">项目描述</Label>
-            <Textarea
-              id="projectDescription"
-              value={newProjectDescription}
-              onChange={(e) => setNewProjectDescription(e.target.value)}
-              placeholder="输入项目描述（可选）"
-              rows={3}
-            />
-          </div>
-          <Button onClick={handleCreateProject}>
-            <Plus className="h-4 w-4 mr-2" />
-            创建项目
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Separator />
-
-      <Card>
-        <CardHeader>
           <CardTitle>项目列表</CardTitle>
+          <CardDescription>
+            管理您的所有项目。新建项目请点击左侧导航栏的 + 按钮。
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {projects.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">暂无项目</p>
+            <p className="text-gray-500 text-center py-4">暂无项目，点击左侧 + 按钮创建新项目</p>
           ) : (
             <div className="space-y-4">
               {projects.map((project) => (

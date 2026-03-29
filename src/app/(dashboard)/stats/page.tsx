@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -18,6 +17,7 @@ import {
 } from 'recharts'
 import { ProjectStats } from '@/types'
 import { CheckCircle, Clock, TrendingUp, AlertCircle } from 'lucide-react'
+import { useProject } from '@/contexts/project-context'
 
 const demoStats: ProjectStats = {
   completionRate: 40,
@@ -46,57 +46,40 @@ const demoStats: ProjectStats = {
 }
 
 export default function StatsPage() {
-  const router = useRouter()
+  const { currentProject, loading: projectLoading } = useProject()
   const [stats, setStats] = useState<ProjectStats | null>(demoStats)
   const [loading, setLoading] = useState(true)
-  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
   const [isDemo, setIsDemo] = useState(false)
 
-  const fetchProjects = useCallback(async () => {
-    try {
-      const res = await fetch('/api/projects')
-      if (res.ok) {
-        const projects = await res.json()
-        if (projects.length > 0) {
-          setCurrentProjectId(projects[0]._id)
-          setIsDemo(false)
-        } else {
-          setIsDemo(true)
-        }
-      } else {
-        setIsDemo(true)
-      }
-    } catch (error) {
-      console.error('获取项目失败，使用演示模式:', error)
-      setIsDemo(true)
-    } finally {
-      setLoading(false)
-    }
-  }, [router])
-
   const fetchStats = useCallback(async () => {
-    if (!currentProjectId || isDemo) return
+    if (!currentProject) {
+      setIsDemo(true)
+      setLoading(false)
+      return
+    }
 
+    setIsDemo(false)
     try {
-      const res = await fetch(`/api/projects/${currentProjectId}/stats`)
+      const res = await fetch(`/api/projects/${currentProject._id}/stats`)
       if (res.ok) {
         const data = await res.json()
         setStats(data)
       }
     } catch (error) {
       console.error('获取统计数据失败:', error)
+      setStats(demoStats)
+    } finally {
+      setLoading(false)
     }
-  }, [currentProjectId, isDemo])
+  }, [currentProject])
 
   useEffect(() => {
-    fetchProjects()
-  }, [fetchProjects])
+    if (!projectLoading) {
+      fetchStats()
+    }
+  }, [fetchStats, projectLoading])
 
-  useEffect(() => {
-    fetchStats()
-  }, [fetchStats])
-
-  if (loading) {
+  if (projectLoading || loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-gray-500">加载中...</div>
@@ -147,10 +130,15 @@ export default function StatsPage() {
     <div className="p-4 md:p-6 space-y-6">
       {isDemo && (
         <div className="bg-yellow-50 border border-yellow-200 px-4 py-2 text-center text-sm text-yellow-800 rounded-lg">
-          演示模式 - 显示模拟数据。请配置MongoDB以查看真实数据。
+          演示模式 - 显示模拟数据。请创建项目以查看真实数据。
         </div>
       )}
-      <h1 className="text-2xl font-bold text-gray-900">数据统计</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">数据统计</h1>
+        {currentProject && (
+          <span className="text-sm text-gray-500">当前项目: {currentProject.name}</span>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {metricCards.map((card) => (

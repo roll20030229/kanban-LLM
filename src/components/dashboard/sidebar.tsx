@@ -10,6 +10,8 @@ import {
   LogOut,
   Menu,
   X,
+  Folder,
+  Plus,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -21,6 +23,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
+import { useProject } from '@/contexts/project-context'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { NewProjectDialog } from './new-project-dialog'
 
 const navItems = [
   { href: '/', icon: LayoutDashboard, label: '看板' },
@@ -31,6 +36,12 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [newProjectOpen, setNewProjectOpen] = useState(false)
+  const { projects, currentProject, setCurrentProject, loading, addProject } = useProject()
+
+  const handleProjectCreated = (project: any) => {
+    addProject(project)
+  }
 
   return (
     <>
@@ -48,7 +59,7 @@ export function Sidebar() {
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
       >
-        <div className="flex flex-col items-center space-y-6 flex-1">
+        <div className="flex flex-col items-center space-y-6 flex-1 w-full">
           <Link href="/" className="flex items-center justify-center">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">V</span>
@@ -69,12 +80,51 @@ export function Sidebar() {
                       ? 'bg-primary/10 text-primary'
                       : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
                   )}
+                  title={item.label}
                 >
                   <item.icon className="h-5 w-5" />
                 </Link>
               )
             })}
           </nav>
+
+          <div className="w-full px-2 mt-4">
+            <div className="w-full h-px bg-gray-200" />
+          </div>
+
+          <div className="w-full px-2 flex-1 overflow-hidden flex flex-col">
+            <button
+              onClick={() => setNewProjectOpen(true)}
+              className="w-10 h-10 flex items-center justify-center rounded-lg transition-colors text-gray-500 hover:bg-primary hover:text-white mb-2"
+              title="新建项目"
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+
+            <ScrollArea className="flex-1">
+              <div className="flex flex-col items-center space-y-1 pb-2">
+                {loading ? (
+                  <div className="w-8 h-8 rounded-lg bg-gray-100 animate-pulse" />
+                ) : (
+                  projects.map((project) => (
+                    <button
+                      key={project._id}
+                      onClick={() => setCurrentProject(project)}
+                      className={cn(
+                        'w-10 h-10 flex items-center justify-center rounded-lg transition-colors text-sm font-medium',
+                        currentProject?._id === project._id
+                          ? 'bg-primary text-white'
+                          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                      )}
+                      title={project.name}
+                    >
+                      {project.name.charAt(0).toUpperCase()}
+                    </button>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
 
         <DropdownMenu>
@@ -102,6 +152,12 @@ export function Sidebar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </aside>
+
+      <NewProjectDialog
+        open={newProjectOpen}
+        onOpenChange={setNewProjectOpen}
+        onSuccess={handleProjectCreated}
+      />
 
       {mobileOpen && (
         <div
