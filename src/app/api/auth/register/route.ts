@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
       name,
       email,
       password: hashedPassword,
-      role: 'member',
     })
 
     return NextResponse.json(
@@ -33,7 +32,6 @@ export async function POST(request: NextRequest) {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
       },
       { status: 201 }
     )

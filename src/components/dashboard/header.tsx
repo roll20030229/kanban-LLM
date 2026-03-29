@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Search, Filter } from 'lucide-react'
+import { Plus, Search, Filter, Bot } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -11,15 +11,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface HeaderProps {
   projectName?: string
   onNewTask?: () => void
   onSearch?: (query: string) => void
   onFilter?: (filter: string) => void
+  onOpenAI?: () => void
+  aiEnabled?: boolean
 }
 
-export function Header({ projectName, onNewTask, onSearch, onFilter }: HeaderProps) {
+export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI, aiEnabled }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
   const handleSearch = (value: string) => {
@@ -58,6 +66,25 @@ export function Header({ projectName, onNewTask, onSearch, onFilter }: HeaderPro
             <SelectItem value="low">低优先级</SelectItem>
           </SelectContent>
         </Select>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 w-8 p-0"
+                onClick={onOpenAI}
+                disabled={!aiEnabled}
+              >
+                <Bot className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {aiEnabled ? 'AI助手' : '请先在设置中配置API Key'}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         <Button size="sm" onClick={onNewTask} className="h-8">
           <Plus className="h-4 w-4 mr-1" />

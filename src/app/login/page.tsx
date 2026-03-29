@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -43,21 +44,17 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const res = await fetch('/api/auth/callback/credentials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-          redirect: false,
-        }),
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
       })
 
-      if (res.ok) {
+      if (result?.error) {
+        setError('邮箱或密码错误')
+      } else {
         router.push('/')
         router.refresh()
-      } else {
-        setError('邮箱或密码错误')
       }
     } catch (err) {
       setError('登录失败，请稍后重试')
@@ -78,21 +75,17 @@ export default function LoginPage() {
       })
 
       if (res.ok) {
-        const loginRes = await fetch('/api/auth/callback/credentials', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: data.email,
-            password: data.password,
-            redirect: false,
-          }),
+        const result = await signIn('credentials', {
+          email: data.email,
+          password: data.password,
+          redirect: false,
         })
 
-        if (loginRes.ok) {
+        if (result?.error) {
+          setError('注册成功，请手动登录')
+        } else {
           router.push('/')
           router.refresh()
-        } else {
-          setError('注册成功，请手动登录')
         }
       } else {
         const err = await res.json()
@@ -123,44 +116,22 @@ export default function LoginPage() {
             </TabsList>
 
             <TabsContent value="login">
-              <form
-                onSubmit={loginForm.handleSubmit(handleLogin)}
-                className="space-y-4 mt-4"
-              >
+              <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-email">邮箱</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    {...loginForm.register('email')}
-                  />
+                  <Input id="login-email" type="email" placeholder="your@email.com" {...loginForm.register('email')} />
                   {loginForm.formState.errors.email && (
-                    <p className="text-sm text-red-500">
-                      {loginForm.formState.errors.email.message}
-                    </p>
+                    <p className="text-sm text-red-500">{loginForm.formState.errors.email.message}</p>
                   )}
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="login-password">密码</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="••••••"
-                    {...loginForm.register('password')}
-                  />
+                  <Input id="login-password" type="password" placeholder="••••••" {...loginForm.register('password')} />
                   {loginForm.formState.errors.password && (
-                    <p className="text-sm text-red-500">
-                      {loginForm.formState.errors.password.message}
-                    </p>
+                    <p className="text-sm text-red-500">{loginForm.formState.errors.password.message}</p>
                   )}
                 </div>
-
-                {error && (
-                  <p className="text-sm text-red-500 text-center">{error}</p>
-                )}
-
+                {error && <p className="text-sm text-red-500 text-center">{error}</p>}
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? '登录中...' : '登录'}
                 </Button>
@@ -168,58 +139,29 @@ export default function LoginPage() {
             </TabsContent>
 
             <TabsContent value="register">
-              <form
-                onSubmit={registerForm.handleSubmit(handleRegister)}
-                className="space-y-4 mt-4"
-              >
+              <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor="register-name">姓名</Label>
-                  <Input
-                    id="register-name"
-                    placeholder="您的姓名"
-                    {...registerForm.register('name')}
-                  />
+                  <Input id="register-name" placeholder="您的姓名" {...registerForm.register('name')} />
                   {registerForm.formState.errors.name && (
-                    <p className="text-sm text-red-500">
-                      {registerForm.formState.errors.name.message}
-                    </p>
+                    <p className="text-sm text-red-500">{registerForm.formState.errors.name.message}</p>
                   )}
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="register-email">邮箱</Label>
-                  <Input
-                    id="register-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    {...registerForm.register('email')}
-                  />
+                  <Input id="register-email" type="email" placeholder="your@email.com" {...registerForm.register('email')} />
                   {registerForm.formState.errors.email && (
-                    <p className="text-sm text-red-500">
-                      {registerForm.formState.errors.email.message}
-                    </p>
+                    <p className="text-sm text-red-500">{registerForm.formState.errors.email.message}</p>
                   )}
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="register-password">密码</Label>
-                  <Input
-                    id="register-password"
-                    type="password"
-                    placeholder="••••••"
-                    {...registerForm.register('password')}
-                  />
+                  <Input id="register-password" type="password" placeholder="••••••" {...registerForm.register('password')} />
                   {registerForm.formState.errors.password && (
-                    <p className="text-sm text-red-500">
-                      {registerForm.formState.errors.password.message}
-                    </p>
+                    <p className="text-sm text-red-500">{registerForm.formState.errors.password.message}</p>
                   )}
                 </div>
-
-                {error && (
-                  <p className="text-sm text-red-500 text-center">{error}</p>
-                )}
-
+                {error && <p className="text-sm text-red-500 text-center">{error}</p>}
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? '注册中...' : '注册'}
                 </Button>

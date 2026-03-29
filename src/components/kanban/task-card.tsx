@@ -3,7 +3,7 @@
 import { Task, TaskStatus } from '@/types'
 import { cn, statusColors, priorityColors, priorityLabels } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Calendar, MoreHorizontal } from 'lucide-react'
+import { Calendar, MoreHorizontal, GripVertical } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface TaskCardProps {
   task: Task
@@ -22,13 +24,37 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onClick, onDelete, isDragging, readOnly }: TaskCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isSortableDragging,
+  } = useSortable({
+    id: task.id,
+    data: {
+      type: 'task',
+      task,
+    },
+    disabled: readOnly,
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
   return (
     <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
       onClick={onClick}
       className={cn(
-        'group bg-white rounded-lg border border-gray-200 p-3 cursor-pointer transition-all duration-200',
+        'group bg-white rounded-lg border border-gray-200 p-3 cursor-pointer transition-all duration-200 relative',
         'hover:shadow-md hover:border-gray-300',
-        isDragging && 'shadow-lg rotate-2 scale-105 opacity-90',
+        (isDragging || isSortableDragging) && 'shadow-lg rotate-2 scale-105 opacity-90',
         readOnly && 'cursor-default'
       )}
     >
@@ -118,6 +144,14 @@ export function TaskCard({ task, onClick, onDelete, isDragging, readOnly }: Task
           </div>
         )}
       </div>
+      {!readOnly && (
+        <div
+          {...listeners}
+          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+        >
+          <GripVertical className="h-4 w-4 text-gray-400" />
+        </div>
+      )}
     </div>
   )
 }

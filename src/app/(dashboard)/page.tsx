@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { KanbanBoard } from '@/components/kanban'
 import { Header, TaskForm } from '@/components/dashboard'
+import { AIAssistant } from '@/components/dashboard/ai-assistant'
 import { Task, TaskStatus } from '@/types'
 
 const demoTasks: Task[] = [
@@ -82,6 +83,8 @@ export default function KanbanPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('all')
   const [isDemo, setIsDemo] = useState(false)
+  const [aiOpen, setAIOpen] = useState(false)
+  const [aiEnabled, setAIEnabled] = useState(true)
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -122,9 +125,22 @@ export default function KanbanPage() {
     }
   }, [currentProjectId, isDemo])
 
+  const checkAIConfig = useCallback(async () => {
+    try {
+      const res = await fetch('/api/ai/config')
+      if (res.ok) {
+        const data = await res.json()
+        setAIEnabled(data.enabled)
+      }
+    } catch (error) {
+      setAIEnabled(false)
+    }
+  }, [])
+
   useEffect(() => {
     fetchProjects()
-  }, [fetchProjects])
+    checkAIConfig()
+  }, [fetchProjects, checkAIConfig])
 
   useEffect(() => {
     fetchTasks()
@@ -239,6 +255,8 @@ export default function KanbanPage() {
     return matchesSearch && matchesPriority
   })
 
+  const members = [...new Set(tasks.map(t => t.assignee).filter(Boolean))] as string[]
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -259,6 +277,8 @@ export default function KanbanPage() {
         onNewTask={() => handleAddTask('todo')}
         onSearch={handleSearch}
         onFilter={handleFilter}
+        onOpenAI={() => setAIOpen(true)}
+        aiEnabled={aiEnabled}
       />
       
       <div className="flex-1 p-4 overflow-hidden">
@@ -277,6 +297,16 @@ export default function KanbanPage() {
         task={selectedTask}
         defaultStatus={defaultStatus}
         onSubmit={handleTaskFormSubmit}
+      />
+
+      <AIAssistant
+        open={aiOpen}
+        onOpenChange={setAIOpen}
+        projectId={currentProjectId}
+        onTaskCreated={fetchTasks}
+        members={members}
+        tasks={tasks}
+        projectName={projectName}
       />
     </div>
   )

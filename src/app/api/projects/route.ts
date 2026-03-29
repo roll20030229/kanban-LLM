@@ -4,11 +4,12 @@ import Project from '@/models/project'
 import { auth } from '@/lib/auth'
 import { generateShareLink } from '@/lib/utils'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth()
+    console.log('Session in GET /api/projects:', JSON.stringify(session, null, 2))
     if (!session?.user?.id) {
-      return NextResponse.json({ error: '未授权' }, { status: 401 })
+      return NextResponse.json({ error: '请先登录' }, { status: 401 })
     }
 
     await connectDB()
