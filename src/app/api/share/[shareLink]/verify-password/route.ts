@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
 import Project from '@/models/project'
-import Task from '@/models/task'
 
-export async function GET(
+export async function POST(
   request: NextRequest,
   { params }: { params: { shareLink: string } }
 ) {
   try {
     await connectDB()
+
+    const body = await request.json()
+    const { password } = body
 
     const project = await Project.findOne({ shareLink: params.shareLink })
 
@@ -24,19 +26,13 @@ export async function GET(
       return NextResponse.json({ error: '分享链接访问次数已达上限' }, { status: 403 })
     }
 
-    const url = new URL(request.url)
-    const password = url.searchParams.get('password')
-
     if (project.shareLinkPassword && project.shareLinkPassword !== password) {
       return NextResponse.json({ error: '访问密码错误' }, { status: 403 })
     }
 
-    const tasks = await Task.find({ projectId: project._id }).sort({
-      createdAt: -1,
-    })
-
-    return NextResponse.json(tasks)
+    return NextResponse.json({ success: true })
   } catch (error) {
-    return NextResponse.json({ error: '获取任务失败' }, { status: 500 })
+    console.error('验证密码失败:', error)
+    return NextResponse.json({ error: '验证失败' }, { status: 500 })
   }
 }

@@ -24,10 +24,9 @@ interface HeaderProps {
   onSearch?: (query: string) => void
   onFilter?: (filter: string) => void
   onOpenAI?: () => void
-  aiEnabled?: boolean
 }
 
-export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI, aiEnabled }: HeaderProps) {
+export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
   const handleSearch = (value: string) => {
@@ -75,13 +74,12 @@ export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI, a
                 variant="outline"
                 className="h-8 w-8 p-0"
                 onClick={onOpenAI}
-                disabled={!aiEnabled}
               >
                 <Bot className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {aiEnabled ? 'AI助手' : '请先在设置中配置API Key'}
+              AI助手
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

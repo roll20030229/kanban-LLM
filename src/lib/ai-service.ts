@@ -11,6 +11,22 @@ interface AIResponse {
   error?: string
 }
 
+interface MemorySummary {
+  teamAssignments: Array<{
+    member: string
+    modules: string[]
+    updatedAt?: Date
+  }>
+  userHabits: {
+    taskSize: 'small' | 'medium' | 'large'
+    averageTaskDays: number
+    preferences: string[]
+    updatedAt?: Date
+  }
+  commonModules: string[]
+  lastSummaryUpdate?: Date
+}
+
 export class AIService {
   private config: AIConfig
 
@@ -195,6 +211,54 @@ export class AIService {
     const data = await response.json()
     return { content: data.choices?.[0]?.message?.content || data.result || data.output, success: true }
   }
+
+  async extractMemoryFromConversation(
+    messages: ChatMessage[],
+    currentMemory: MemorySummary
+  ): Promise<Partial<MemorySummary>> {
+    const recentMessages = messages.slice(-10)
+    const conversationText = recentMessages
+      .filter(m => m.role !== 'system')
+      .map(m => `${m.role}: ${m.content}`)
+      .join('\n')
+
+    const extractPrompt = `分析以下对话，提取团队分工、用户习惯和常用模块信息。
+
+当前已知记忆：
+- 团队分工：${currentMemory.teamAssignments.map(t => `${t.member}负责${t.modules.join('、')}`).join('；') || '暂无'}
+- 用户习惯：任务规模偏好${currentMemory.userHabits.taskSize}，平均任务周期${currentMemory.userHabits.averageTaskDays}天
+- 常用模块：${currentMemory.commonModules.join('、') || '暂无'}
+
+对话内容：
+${conversationText}
+
+请返回JSON格式的新发现（只返回有变化的部分）：
+{
+  "teamAssignments": [{"member": "成员名", "modules": ["模块1", "模块2"]}],
+  "userHabits": {"taskSize": "small/medium/large", "averageTaskDays": 数字, "preferences": ["偏好"]},
+  "commonModules": ["模块1", "模块2"]
+}
+
+如果没有新发现，返回空对象 {}。只返回JSON，不要其他内容。`
+
+    try {
+      const response = await this.chat([
+        { role: 'system', content: '你是一个信息提取助手，专门从对话中提取团队协作相关的记忆信息。' },
+        { role: 'user', content: extractPrompt }
+      ])
+
+      if (response.success && response.content) {
+        const jsonMatch = response.content.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0])
+        }
+      }
+    } catch (error) {
+      console.error('提取记忆失败:', error)
+    }
+
+    return {}
+  }
 }
 
 export function buildProjectContext(tasks: Task[], projectName: string): string {
@@ -246,10 +310,10 @@ export function buildProjectContext(tasks: Task[], projectName: string): string 
 任务总数: ${total}
 完成进度: ${completionRate}% (${done}/${total})
 任务状态分布:
-- 待办(Todo): ${todo}
+- 待办: ${todo}
 - 进行中(In Progress): ${inProgress}
 - 审核中(In Review): ${inReview}
-- 已完成(Done): ${done}
+- 已完成: ${done}
 
 高优先级未完成任务: ${highPriority}
 已过期任务: ${overdueTasks.length}
@@ -267,26 +331,82 @@ ${tasks.map(t => `- [${t.status}] ${t.title}${t.assignee ? ` (负责人: ${t.ass
 `.trim()
 }
 
-export function getSystemPrompt(): string {
+export function getSystemPrompt(memorySummary?: MemorySummary): string {
+  let memoryContext = ''
+  
+  if (memorySummary) {
+    const parts: string[] = []
+    
+    if (memorySummary.teamAssignments.length > 0) {
+      parts.push(`团队分工记忆：${memorySummary.teamAssignments.map(t => `${t.member}负责${t.modules.join('、')}`).join('；')}。创建任务时请根据分工自动分配负责人。`)
+    }
+    
+    if (memorySummary.userHabits) {
+      const habitDesc = memorySummary.userHabits.taskSize === 'small' ? '小任务（1-2天）' :
+                       memorySummary.userHabits.taskSize === 'large' ? '大任务（5天以上）' : '中等任务（2-4天）'
+      parts.push(`用户习惯：偏好${habitDesc}，平均任务周期${memorySummary.userHabits.averageTaskDays}天。拆解任务时请参考这个节奏。`)
+    }
+    
+    if (memorySummary.commonModules.length > 0) {
+      parts.push(`常用模块：${memorySummary.commonModules.join('、')}。用户提到相关需求时请按这些模块拆解。`)
+    }
+    
+    if (parts.length > 0) {
+      memoryContext = `\n\n【长期记忆】\n${parts.join('\n')}\n请基于这些记忆来理解用户意图，让回答更贴合团队实际情况。`
+    }
+  }
+
   return `你是一个专业的项目管理AI助手，帮助用户管理看板项目。你可以：
 
-1. 创建任务：解析用户的自然语言描述，提取任务信息
-2. 项目分析：基于项目数据回答用户问题，包括进度、效率、风险等
-3. 任务建议：提供任务优先级、时间管理建议
+1. 创建单个任务：解析用户的简单描述，提取任务信息
+2. 拆解客户需求：将复杂的客户需求自动拆解成多个可执行的任务
+3. 项目分析：基于项目数据回答用户问题，包括进度、效率、风险等
 
-当用户想要创建任务时，请分析并返回JSON格式的任务信息：
+【重要】判断用户输入类型并返回对应格式：
+
+**情况1：创建单个任务**（用户描述的是一个简单、具体的任务）
+返回JSON：
 {
   "action": "create_task",
   "task": {
     "title": "任务标题",
     "description": "任务描述（可选）",
-    "assignee": "负责人（可选）",
-    "dueDate": "YYYY-MM-DD格式的截止日期（可选）",
-    "priority": "high/medium/low（默认medium）",
+    "assignee": "负责人（根据团队分工记忆分配）",
+    "dueDate": "YYYY-MM-DD格式的截止日期",
+    "priority": "high/medium/low",
     "status": "todo"
   }
 }
 
-当用户询问项目相关问题时，基于提供的项目数据进行分析和回答。
-请用简洁、专业的中文回答。`
+**情况2：拆解客户需求**（用户描述的是一个完整的项目需求或功能需求，包含多个功能点、模块或需要多步骤完成）
+返回JSON：
+{
+  "action": "decompose_requirement",
+  "requirement": "需求概述",
+  "tasks": [
+    {
+      "title": "任务标题（清晰可执行）",
+      "description": "任务描述（包含客户需求中的具体细节）",
+      "assignee": "负责人（根据团队分工记忆分配）",
+      "dueDate": "YYYY-MM-DD（根据整体交付时间合理分配）",
+      "priority": "high/medium/low（核心功能为high）",
+      "status": "todo"
+    }
+  ]
 }
+
+**拆解需求时的要求：**
+- 每个任务必须是可独立执行的最小单元
+- 自动根据客户说的整体交付时间，给每个任务分配合理的截止日期
+- 核心功能、关键路径的任务优先级设为high
+- 必须根据团队分工记忆自动分配负责人
+- 任务描述要包含客户需求中对应的具体细节
+- 任务数量要合理，通常3-8个任务
+
+**情况3：项目问答**（用户询问项目相关的问题）
+直接用中文回答，不需要返回JSON。
+
+请用简洁、专业的中文回答。${memoryContext}`
+}
+
+export type { MemorySummary, ChatMessage }

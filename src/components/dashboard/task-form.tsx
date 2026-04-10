@@ -36,12 +36,22 @@ const taskSchema = z.object({
 
 type TaskFormData = z.infer<typeof taskSchema>
 
+interface TaskFormSubmitData {
+  title: string
+  description?: string
+  status: 'todo' | 'in_progress' | 'in_review' | 'done'
+  priority: 'low' | 'medium' | 'high'
+  assignee?: string
+  dueDate?: string
+  tags?: string[]
+}
+
 interface TaskFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   task?: Task | null
   defaultStatus?: TaskStatus
-  onSubmit: (data: TaskFormData) => Promise<void>
+  onSubmit: (data: TaskFormSubmitData) => Promise<void>
 }
 
 export function TaskForm({

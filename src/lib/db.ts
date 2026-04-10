@@ -6,10 +6,20 @@ if (!MONGODB_URI) {
   throw new Error('请在环境变量中配置 MONGODB_URI')
 }
 
-let cached = global.mongoose
+interface MongooseCache {
+  conn: typeof mongoose | null
+  promise: Promise<typeof mongoose> | null
+}
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null }
+declare global {
+  // eslint-disable-next-line no-var
+  var mongoose: MongooseCache | undefined
+}
+
+let cached: MongooseCache = global.mongoose || { conn: null, promise: null }
+
+if (!global.mongoose) {
+  global.mongoose = cached
 }
 
 export async function connectDB() {

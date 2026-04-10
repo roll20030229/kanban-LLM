@@ -2,15 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
 import User from '@/models/user'
 import bcrypt from 'bcryptjs'
+import { registerSchema } from '@/lib/validations'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, password } = body
+    const validation = registerSchema.safeParse(body)
 
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: '请填写所有必填字段' }, { status: 400 })
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0]?.message || '参数验证失败'
+      return NextResponse.json({ error: errorMessage }, { status: 400 })
     }
+
+    const { name, email, password } = validation.data
 
     await connectDB()
 
@@ -36,6 +40,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
+    console.error('注册失败:', error)
     return NextResponse.json({ error: '注册失败' }, { status: 500 })
   }
 }

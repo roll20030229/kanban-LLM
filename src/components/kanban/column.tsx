@@ -82,7 +82,6 @@ export function Column({
       </div>
 
       <div
-        {...listeners}
         className="flex-1 p-2 space-y-2 overflow-y-auto scrollbar-hide min-h-[200px]"
       >
         <SortableContext

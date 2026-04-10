@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { KanbanBoard } from '@/components/kanban'
-import { Header, TaskForm } from '@/components/dashboard'
+import { Header, TaskForm, AIConfigDialog } from '@/components/dashboard'
 import { AIAssistant } from '@/components/dashboard/ai-assistant'
 import { Task, TaskStatus } from '@/types'
 import { useProject } from '@/contexts/project-context'
@@ -12,12 +12,14 @@ const demoTasks: Task[] = [
     id: '1',
     projectId: 'demo',
     title: '设计用户界面原型',
-    description: '完成首页和看板页面的UI设计',
+    description: '完成首页和看板页面的 UI 设计',
     status: 'todo',
     priority: 'high',
     assignee: '张三',
     dueDate: new Date('2024-04-15'),
     tags: ['设计', 'UI'],
+    order: 0,
+    version: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -25,23 +27,27 @@ const demoTasks: Task[] = [
     id: '2',
     projectId: 'demo',
     title: '实现拖拽功能',
-    description: '使用@dnd-kit实现任务拖拽',
+    description: '使用@dnd-kit 实现任务拖拽',
     status: 'in_progress',
     priority: 'high',
     assignee: '李四',
     tags: ['开发'],
+    order: 0,
+    version: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
   {
     id: '3',
     projectId: 'demo',
-    title: '编写API文档',
-    description: '完善API接口文档',
+    title: '编写 API 文档',
+    description: '完善 API 接口文档',
     status: 'in_review',
     priority: 'medium',
     assignee: '王五',
     tags: ['文档'],
+    order: 0,
+    version: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -49,11 +55,13 @@ const demoTasks: Task[] = [
     id: '4',
     projectId: 'demo',
     title: '项目初始化',
-    description: '创建Next.js项目并配置基础依赖',
+    description: '创建 Next.js 项目并配置基础依赖',
     status: 'done',
     priority: 'high',
     assignee: '张三',
     tags: ['开发'],
+    order: 0,
+    version: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -61,11 +69,13 @@ const demoTasks: Task[] = [
     id: '5',
     projectId: 'demo',
     title: '数据库设计',
-    description: '设计MongoDB数据模型',
+    description: '设计 MongoDB 数据模型',
     status: 'done',
     priority: 'medium',
     assignee: '李四',
     tags: ['数据库'],
+    order: 1,
+    version: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -82,9 +92,17 @@ export default function KanbanPage() {
   const [priorityFilter, setPriorityFilter] = useState('all')
   const [isDemo, setIsDemo] = useState(false)
   const [aiOpen, setAIOpen] = useState(false)
+  const [aiConfigOpen, setAIConfigOpen] = useState(false)
   const [aiEnabled, setAIEnabled] = useState(true)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0,
+  })
+  const [hasMore, setHasMore] = useState(true)
 
-  const fetchTasks = useCallback(async () => {
+  const fetchTasks = useCallback(async (page = 1, append = false) => {
     if (!currentProject) {
       setIsDemo(true)
       setLoading(false)
@@ -93,10 +111,13 @@ export default function KanbanPage() {
     
     setIsDemo(false)
     try {
-      const res = await fetch(`/api/projects/${currentProject._id}/tasks`)
+      const res = await fetch(`/api/projects/${currentProject._id}/tasks?page=${page}&limit=50`)
       if (res.ok) {
         const data = await res.json()
-        setTasks(data.length > 0 ? data : demoTasks)
+        const newTasks = data.tasks.length > 0 ? data.tasks : demoTasks
+        setTasks(prevTasks => append ? [...prevTasks, ...newTasks] : newTasks)
+        setPagination(data.pagination)
+        setHasMore(data.pagination.page < data.pagination.totalPages)
       }
     } catch (error) {
       console.error('获取任务失败:', error)
@@ -116,6 +137,29 @@ export default function KanbanPage() {
     } catch (error) {
       setAIEnabled(false)
     }
+  }, [])
+
+  const handleOpenAI = useCallback(async () => {
+    try {
+      const res = await fetch('/api/ai/config')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.enabled) {
+          setAIOpen(true)
+        } else {
+          setAIConfigOpen(true)
+        }
+      } else {
+        setAIConfigOpen(true)
+      }
+    } catch (error) {
+      setAIConfigOpen(true)
+    }
+  }, [])
+
+  const handleAIConfigured = useCallback(() => {
+    setAIEnabled(true)
+    setAIOpen(true)
   }, [])
 
   useEffect(() => {
@@ -194,6 +238,8 @@ export default function KanbanPage() {
           assignee: data.assignee,
           dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
           tags: data.tags,
+          order: 0,
+          version: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
         }
@@ -235,7 +281,7 @@ export default function KanbanPage() {
     return matchesSearch && matchesPriority
   })
 
-  const members = [...new Set(tasks.map(t => t.assignee).filter(Boolean))] as string[]
+  const members = Array.from(new Set(tasks.map(t => t.assignee).filter(Boolean))) as string[]
 
   if (projectLoading || loading) {
     return (
@@ -257,8 +303,7 @@ export default function KanbanPage() {
         onNewTask={() => handleAddTask('todo')}
         onSearch={handleSearch}
         onFilter={handleFilter}
-        onOpenAI={() => setAIOpen(true)}
-        aiEnabled={aiEnabled}
+        onOpenAI={handleOpenAI}
       />
       
       <div className="flex-1 p-4 overflow-hidden">
@@ -287,6 +332,12 @@ export default function KanbanPage() {
         members={members}
         tasks={tasks}
         projectName={currentProject?.name || '演示项目'}
+      />
+
+      <AIConfigDialog
+        open={aiConfigOpen}
+        onOpenChange={setAIConfigOpen}
+        onConfigured={handleAIConfigured}
       />
     </div>
   )

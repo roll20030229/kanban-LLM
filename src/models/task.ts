@@ -19,10 +19,12 @@ const TaskSchema = new mongoose.Schema({
   assignee: { type: String },
   dueDate: { type: Date },
   tags: [{ type: String }],
+  order: { type: Number, default: 0 },
+  version: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 })
 
-TaskSchema.index({ projectId: 1, status: 1 })
+TaskSchema.index({ projectId: 1, status: 1, order: 1 })
 
 export default mongoose.models.Task || mongoose.model('Task', TaskSchema)

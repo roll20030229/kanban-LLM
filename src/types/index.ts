@@ -37,6 +37,8 @@ export interface Task {
   assignee?: string
   dueDate?: Date
   tags?: string[]
+  order: number
+  version: number
   createdAt: Date
   updatedAt: Date
 }

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { AIConfig, AIModelType } from '@/types'
-
-let userAIConfigs: Record<string, AIConfig> = {}
+import { setAIConfig, getAIConfigForUser, getDefaultModel } from '@/lib/ai-config'
 
 export async function GET() {
   try {
@@ -12,11 +11,12 @@ export async function GET() {
     }
 
     const userId = session.user.id
+    const config = getAIConfigForUser(userId)
     
-    if (userAIConfigs[userId]) {
+    if (config) {
       return NextResponse.json({ 
         enabled: true, 
-        config: userAIConfigs[userId] 
+        config 
       })
     }
 
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       endpoint,
     }
 
-    userAIConfigs[session.user.id] = config
+    setAIConfig(session.user.id, config)
 
     return NextResponse.json({ 
       success: true, 
@@ -75,16 +75,4 @@ export async function POST(request: NextRequest) {
     console.error('保存AI配置失败:', error)
     return NextResponse.json({ error: '保存配置失败' }, { status: 500 })
   }
-}
-
-function getDefaultModel(modelType: AIModelType): string {
-  const defaults: Record<AIModelType, string> = {
-    openai: 'gpt-3.5-turbo',
-    qwen: 'qwen-max',
-    doubao: 'doubao-pro-32k',
-    wenxin: 'ernie-bot-4',
-    claude: 'claude-3-haiku-20240307',
-    custom: '',
-  }
-  return defaults[modelType] || 'gpt-3.5-turbo'
 }

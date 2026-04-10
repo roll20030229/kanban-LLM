@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { AIService, buildProjectContext, getSystemPrompt } from '@/lib/ai-service'
+import { AIService, buildProjectContext, getSystemPrompt, MemorySummary } from '@/lib/ai-service'
 import { Task, TaskPriority, TaskStatus, AIConfig } from '@/types'
-import dbConnect from '@/lib/db'
+import { connectDB } from '@/lib/db'
 import TaskModel from '@/models/task'
 
 interface ParsedTask {
@@ -14,6 +14,13 @@ interface ParsedTask {
   status: TaskStatus
 }
 
+interface ParsedResponse {
+  action: string
+  task?: ParsedTask
+  requirement?: string
+  tasks?: ParsedTask[]
+}
+
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
@@ -21,7 +28,7 @@ interface ChatMessage {
 
 let userAIConfigs: Record<string, AIConfig> = {}
 
-function parseTaskFromResponse(content: string): { action: string; task?: ParsedTask } | null {
+function parseTaskFromResponse(content: string): ParsedResponse | null {
   try {
     const jsonMatch = content.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
@@ -173,7 +180,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { message, members = [], tasks = [], projectName = '', history = [] } = body
+    const { message, members = [], tasks = [], projectName = '', history = [], memorySummary } = body
 
     if (!message) {
       return NextResponse.json({ error: '请输入消息' }, { status: 400 })
@@ -205,7 +212,7 @@ export async function POST(request: NextRequest) {
     const projectContext = buildProjectContext(tasks as Task[], projectName)
     
     const messages: ChatMessage[] = [
-      { role: 'system', content: getSystemPrompt() },
+      { role: 'system', content: getSystemPrompt(memorySummary as MemorySummary) },
       { role: 'system', content: `当前项目数据：\n${projectContext}` },
       ...history.map((h: { role: string; content: string }) => ({
         role: h.role as 'user' | 'assistant',
@@ -228,6 +235,15 @@ export async function POST(request: NextRequest) {
     }
 
     const parsed = parseTaskFromResponse(response.content)
+    if (parsed?.action === 'decompose_requirement' && parsed.tasks) {
+      return NextResponse.json({ 
+        action: 'decompose_requirement',
+        requirement: parsed.requirement,
+        tasks: parsed.tasks,
+        message: `已拆解为${parsed.tasks.length}个任务` 
+      })
+    }
+    
     if (parsed?.action === 'create_task' && parsed.task) {
       return NextResponse.json({ 
         task: parsed.task, 

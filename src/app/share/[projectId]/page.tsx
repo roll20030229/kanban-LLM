@@ -15,32 +15,61 @@ export default function SharePage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [requiresPassword, setRequiresPassword] = useState(false)
+  const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const projectRes = await fetch(`/api/share/${shareLink}`)
-        if (!projectRes.ok) {
-          setError('项目不存在或链接已失效')
+    fetchTasks()
+  }, [shareLink])
+
+  const handlePasswordSubmit = async () => {
+    setPasswordError('')
+    setLoading(true)
+    await fetchTasks(password)
+  }
+
+  const fetchTasks = async (pwd?: string) => {
+    try {
+      const projectRes = await fetch(`/api/share/${shareLink}`)
+      if (!projectRes.ok) {
+        const errorData = await projectRes.json()
+        setError(errorData.error || '项目不存在或链接已失效')
+        return
+      }
+      const projectData = await projectRes.json()
+      setProject(projectData)
+
+      if (pwd) {
+        const verifyRes = await fetch(`/api/share/${shareLink}/verify-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pwd }),
+        })
+
+        if (!verifyRes.ok) {
+          const errorData = await verifyRes.json()
+          if (errorData.error === '访问密码错误') {
+            setPasswordError('密码错误，请重新输入')
+            setRequiresPassword(true)
+          } else if (errorData.error === '分享链接已过期' || errorData.error === '分享链接访问次数已达上限') {
+            setError(errorData.error)
+          }
           return
         }
-        const projectData = await projectRes.json()
-        setProject(projectData)
-
-        const tasksRes = await fetch(`/api/share/${shareLink}/tasks`)
-        if (tasksRes.ok) {
-          const tasksData = await tasksRes.json()
-          setTasks(tasksData)
-        }
-      } catch (err) {
-        setError('加载失败，请稍后重试')
-      } finally {
-        setLoading(false)
       }
+      
+      const tasksRes = await fetch(`/api/share/${shareLink}/tasks`)
+      if (tasksRes.ok) {
+        const tasksData = await tasksRes.json()
+        setTasks(tasksData)
+      }
+    } catch (err) {
+      setError('加载失败，请稍后重试')
+    } finally {
+      setLoading(false)
     }
-
-    fetchData()
-  }, [shareLink])
+  }
 
   if (loading) {
     return (
@@ -55,6 +84,35 @@ export default function SharePage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (requiresPassword) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold text-center mb-6">请输入访问密码</h2>
+          <div className="space-y-4">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+              placeholder="请输入密码"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            {passwordError && (
+              <p className="text-red-500 text-sm">{passwordError}</p>
+            )}
+            <button
+              onClick={handlePasswordSubmit}
+              className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              确认
+            </button>
+          </div>
         </div>
       </div>
     )

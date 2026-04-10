@@ -74,7 +74,7 @@ export function KanbanBoard({
     }
   }, [tasks, onTaskStatusChange])
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event
     setActiveTask(null)
 
@@ -89,8 +89,97 @@ export function KanbanBoard({
     if (!activeTask) return
 
     const overTask = tasks.find((t) => t.id === overId)
+    
+    // 跨列拖拽
     if (overTask && activeTask.status !== overTask.status) {
       onTaskStatusChange?.(activeId, overTask.status)
+      
+      try {
+        // 获取目标列的所有任务并重新计算顺序
+        const targetColumnTasks = tasks
+          .filter(t => t.status === overTask.status)
+          .sort((a, b) => a.order - b.order)
+        
+        const overIndex = targetColumnTasks.findIndex(t => t.id === overId)
+        
+        // 重新计算整列的顺序（使用整数序列）
+        const newColumnTasks = [...targetColumnTasks]
+        newColumnTasks.splice(overIndex, 0, { ...activeTask, status: overTask.status })
+        
+        const reorderData = newColumnTasks.map((task, index) => ({
+          id: task.id,
+          order: index,
+          status: task.status,
+          version: task.version, // 添加版本号
+        }))
+        
+        const response = await fetch(`/api/projects/${activeTask.projectId}/tasks/reorder`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tasks: reorderData }),
+        })
+
+        if (response.status === 409) {
+          const errorData = await response.json()
+          console.error('版本冲突:', errorData.error)
+          // 提示用户刷新页面
+          alert('任务已被其他用户修改，页面将自动刷新')
+          window.location.reload()
+          return
+        }
+
+        if (!response.ok) {
+          throw new Error('保存任务状态失败')
+        }
+      } catch (error) {
+        console.error('保存任务状态失败:', error)
+        alert('保存失败，请重试')
+      }
+    }
+    // 同列排序
+    else if (overTask && activeTask.status === overTask.status) {
+      try {
+        const columnTasks = tasks.filter(t => t.status === activeTask.status).sort((a, b) => a.order - b.order)
+        const oldIndex = columnTasks.findIndex(t => t.id === activeId)
+        const newIndex = columnTasks.findIndex(t => t.id === overId)
+        
+        if (oldIndex !== -1 && newIndex !== -1) {
+          // 重新排序
+          const newColumnTasks = [...columnTasks]
+          newColumnTasks.splice(oldIndex, 1)
+          newColumnTasks.splice(newIndex, 0, activeTask)
+          
+          // 批量更新顺序
+          const reorderData = newColumnTasks.map((task, index) => ({
+            id: task.id,
+            order: index,
+            status: task.status,
+            version: task.version, // 添加版本号
+          }))
+          
+          const response = await fetch(`/api/projects/${activeTask.projectId}/tasks/reorder`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tasks: reorderData }),
+          })
+
+          if (response.status === 409) {
+            const errorData = await response.json()
+            console.error('版本冲突:', errorData.error)
+            // 提示用户刷新页面
+            alert('任务已被其他用户修改，页面将自动刷新')
+            window.location.reload()
+            return
+          }
+
+          if (!response.ok) {
+            throw new Error('保存任务顺序失败')
+          }
+        }
+      } catch (error) {
+        console.error('保存任务顺序失败:', error)
+        alert('保存失败，请重试')
+      }
     }
   }, [tasks, onTaskStatusChange])
 
