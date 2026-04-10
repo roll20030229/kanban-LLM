@@ -58,11 +58,11 @@ export function NewProjectDialog({ open, onOpenChange, onSuccess }: NewProjectDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>新建项目</DialogTitle>
+          <DialogTitle className="text-white/90">新建项目</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-2">
           <div className="space-y-2">
-            <Label htmlFor="name">项目名称</Label>
+            <Label htmlFor="name" className="text-white/65 text-sm font-medium">项目名称</Label>
             <Input
               id="name"
               value={name}
@@ -72,7 +72,7 @@ export function NewProjectDialog({ open, onOpenChange, onSuccess }: NewProjectDi
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">项目描述</Label>
+            <Label htmlFor="description" className="text-white/65 text-sm font-medium">项目描述</Label>
             <Textarea
               id="description"
               value={description}
@@ -81,7 +81,7 @@ export function NewProjectDialog({ open, onOpenChange, onSuccess }: NewProjectDi
               rows={3}
             />
           </div>
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2.5 pt-4 border-t border-white/[0.05]">
             <Button
               type="button"
               variant="outline"
@@ -90,7 +90,7 @@ export function NewProjectDialog({ open, onOpenChange, onSuccess }: NewProjectDi
               取消
             </Button>
             <Button type="submit" disabled={loading}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-1.5" />
               {loading ? '创建中...' : '创建项目'}
             </Button>
           </div>

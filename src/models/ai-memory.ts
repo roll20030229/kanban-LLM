@@ -42,6 +42,25 @@ const AIMemorySchema = new mongoose.Schema({
   
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+}, {
+  toJSON: {
+    virtuals: true,
+    transform: (_, ret: any) => {
+      ret.id = ret._id.toString()
+      delete ret._id
+      delete ret.__v
+      return ret
+    }
+  },
+  toObject: {
+    virtuals: true,
+    transform: (_, ret: any) => {
+      ret.id = ret._id.toString()
+      delete ret._id
+      delete ret.__v
+      return ret
+    }
+  }
 })
 
 AIMemorySchema.index({ projectId: 1, userId: 1 }, { unique: true })

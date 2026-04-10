@@ -3,7 +3,7 @@ import { connectDB } from '@/lib/db'
 import AIMemory from '@/models/ai-memory'
 import { auth } from '@/lib/auth'
 import { AIService, MemorySummary } from '@/lib/ai-service'
-import { getAIConfigForUser } from '@/lib/ai-config'
+import { getAIConfigForUser, getAIConfig } from '@/lib/ai-config'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,18 +18,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '参数错误' }, { status: 400 })
     }
 
-    let config = getAIConfigForUser(session.user.id)
+    let config = await getAIConfigForUser(session.user.id)
     
     if (!config) {
-      const envKey = process.env.OPENAI_API_KEY
-      if (envKey) {
-        config = {
-          enabled: true,
-          modelType: 'openai',
-          apiKey: envKey,
-          modelName: 'gpt-3.5-turbo',
-        }
-      }
+      config = await getAIConfig(session.user.id)
     }
     
     if (!config || !config.enabled || !config.apiKey) {

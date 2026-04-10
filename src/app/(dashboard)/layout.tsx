@@ -1,4 +1,7 @@
+'use client'
+
 import { Sidebar } from '@/components/dashboard'
+import { CyberBackgroundEffect } from '@/components/ui/cyber-effects'
 
 export default function DashboardLayout({
   children,
@@ -6,11 +9,11 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-background">
+    <CyberBackgroundEffect>
       <Sidebar />
-      <main className="md:ml-16 min-h-screen">
+      <main className="md:ml-16 min-h-screen relative z-10">
         {children}
       </main>
-    </div>
+    </CyberBackgroundEffect>
   )
 }

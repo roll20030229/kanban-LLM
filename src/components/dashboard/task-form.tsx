@@ -131,30 +131,30 @@ export function TaskForm({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>{task ? '编辑任务' : '新建任务'}</SheetTitle>
-          <SheetDescription>
+          <SheetTitle className="text-white/90">{task ? '编辑任务' : '新建任务'}</SheetTitle>
+          <SheetDescription className="text-white/40">
             {task ? '修改任务信息' : '创建一个新的任务'}
           </SheetDescription>
         </SheetHeader>
 
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
-          className="space-y-4 mt-6"
+          className="space-y-5 mt-6"
         >
           <div className="space-y-2">
-            <Label htmlFor="title">标题 *</Label>
+            <Label htmlFor="title" className="text-white/65 text-sm font-medium">标题 *</Label>
             <Input
               id="title"
               {...register('title')}
               placeholder="输入任务标题"
             />
             {errors.title && (
-              <p className="text-sm text-red-500">{errors.title.message}</p>
+              <p className="text-sm text-red-400">{errors.title.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">描述</Label>
+            <Label htmlFor="description" className="text-white/65 text-sm font-medium">描述</Label>
             <Textarea
               id="description"
               {...register('description')}
@@ -165,7 +165,7 @@ export function TaskForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>状态</Label>
+              <Label className="text-white/65 text-sm font-medium">状态</Label>
               <Select
                 value={watch('status')}
                 onValueChange={(value) => setValue('status', value as TaskStatus)}
@@ -183,7 +183,7 @@ export function TaskForm({
             </div>
 
             <div className="space-y-2">
-              <Label>优先级</Label>
+              <Label className="text-white/65 text-sm font-medium">优先级</Label>
               <Select
                 value={watch('priority')}
                 onValueChange={(value) =>
@@ -203,7 +203,7 @@ export function TaskForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="assignee">负责人</Label>
+            <Label htmlFor="assignee" className="text-white/65 text-sm font-medium">负责人</Label>
             <Input
               id="assignee"
               {...register('assignee')}
@@ -212,7 +212,7 @@ export function TaskForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dueDate">截止日期</Label>
+            <Label htmlFor="dueDate" className="text-white/65 text-sm font-medium">截止日期</Label>
             <Input
               id="dueDate"
               type="date"
@@ -221,7 +221,7 @@ export function TaskForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tags">标签</Label>
+            <Label htmlFor="tags" className="text-white/65 text-sm font-medium">标签</Label>
             <Input
               id="tags"
               {...register('tags')}
@@ -229,7 +229,7 @@ export function TaskForm({
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-2.5 pt-4 border-t border-white/[0.05]">
             <Button
               type="button"
               variant="outline"

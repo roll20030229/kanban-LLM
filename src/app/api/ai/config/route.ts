@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { AIConfig, AIModelType } from '@/types'
+import { AIModelType } from '@/types'
 import { setAIConfig, getAIConfigForUser, getDefaultModel } from '@/lib/ai-config'
 
 export async function GET() {
@@ -11,31 +11,32 @@ export async function GET() {
     }
 
     const userId = session.user.id
-    const config = getAIConfigForUser(userId)
-    
+    const config = await getAIConfigForUser(userId)
+
     if (config) {
-      return NextResponse.json({ 
-        enabled: true, 
-        config 
+      const safeConfig = { ...config, apiKey: config.apiKey ? '******' : undefined }
+      return NextResponse.json({
+        enabled: true,
+        config: safeConfig,
       })
     }
 
     const envKey = process.env.OPENAI_API_KEY
     if (envKey) {
-      return NextResponse.json({ 
-        enabled: true, 
+      return NextResponse.json({
+        enabled: true,
         config: {
           enabled: true,
           modelType: 'openai' as AIModelType,
-          apiKey: envKey,
+          apiKey: '******',
           modelName: 'gpt-3.5-turbo',
-        }
+        },
       })
     }
 
-    return NextResponse.json({ 
-      enabled: false, 
-      config: null 
+    return NextResponse.json({
+      enabled: false,
+      config: null,
     })
   } catch (error) {
     console.error('获取AI配置失败:', error)
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'API Key不能为空' }, { status: 400 })
     }
 
-    const config: AIConfig = {
+    const config = {
       enabled: true,
       modelType: modelType || 'openai',
       apiKey,
@@ -65,11 +66,11 @@ export async function POST(request: NextRequest) {
       endpoint,
     }
 
-    setAIConfig(session.user.id, config)
+    await setAIConfig(session.user.id, config)
 
-    return NextResponse.json({ 
-      success: true, 
-      config: { ...config, apiKey: '******' } 
+    return NextResponse.json({
+      success: true,
+      config: { ...config, apiKey: '******' },
     })
   } catch (error) {
     console.error('保存AI配置失败:', error)

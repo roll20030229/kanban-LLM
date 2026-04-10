@@ -433,33 +433,33 @@ export function AIAssistant({
   }
 
   const formatTaskCard = (task: ParsedTask) => (
-    <Card className="mt-2 border-primary/20 bg-primary/5">
+    <Card className="mt-2 border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.15)]">
       <CardContent className="p-3 space-y-2">
-        <div className="font-medium">{task.title}</div>
+        <div className="font-medium text-white/85 text-sm">{task.title}</div>
         {task.description && (
-          <div className="text-sm text-gray-600">{task.description}</div>
+          <div className="text-sm text-white/35">{task.description}</div>
         )}
         <div className="flex flex-wrap gap-2 text-xs">
           {task.assignee && (
-            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
+            <span className="px-2 py-0.5 bg-white/[0.05] text-white/60 border border-white/[0.08] rounded-md backdrop-blur-sm">
               负责人: {task.assignee}
             </span>
           )}
           {task.dueDate && (
-            <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded">
+            <span className="px-2 py-0.5 bg-white/[0.05] text-white/55 border border-white/[0.08] rounded-md backdrop-blur-sm">
               截止: {task.dueDate}
             </span>
           )}
-          <span className={`px-2 py-0.5 rounded ${
-            task.priority === 'high' ? 'bg-red-100 text-red-700' :
-            task.priority === 'low' ? 'bg-gray-100 text-gray-700' :
-            'bg-yellow-100 text-yellow-700'
+          <span className={`px-2 py-0.5 rounded-md border backdrop-blur-sm ${
+            task.priority === 'high' ? 'bg-red-500/[0.08] text-red-400 border-red-500/[0.15]' :
+            task.priority === 'low' ? 'bg-white/[0.04] text-white/45 border-white/[0.06]' :
+            'bg-amber-500/[0.08] text-amber-400 border-amber-500/[0.15]'
           }`}>
             {task.priority === 'high' ? '高优先级' : 
              task.priority === 'low' ? '低优先级' : '中优先级'}
           </span>
         </div>
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2 pt-2 border-t border-white/[0.04]">
           <Button size="sm" onClick={confirmCreateTask} disabled={loading}>
             <Check className="h-3 w-3 mr-1" />
             确认创建
@@ -474,42 +474,42 @@ export function AIAssistant({
   )
 
   const formatBatchTasksCard = (tasks: ParsedTask[]) => (
-    <Card className="mt-2 border-primary/20 bg-primary/5">
+    <Card className="mt-2 border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.15)]">
       <CardContent className="p-3 space-y-3">
-        <div className="text-sm font-medium text-gray-700 mb-2">
+        <div className="text-sm font-medium text-white/85 mb-2">
           共 {tasks.length} 个任务：
         </div>
         {tasks.map((task, index) => (
-          <div key={index} className="p-2 bg-white rounded border text-sm space-y-1">
+          <div key={index} className="p-2 bg-white/[0.02] rounded-[8px] border border-white/[0.06] text-sm space-y-1">
             <div className="font-medium flex items-center gap-2">
-              <span className="text-gray-400">{index + 1}.</span>
-              {task.title}
+              <span className="text-white/30">{index + 1}.</span>
+              <span className="text-white/80">{task.title}</span>
             </div>
             {task.description && (
-              <div className="text-gray-500 text-xs pl-4">{task.description}</div>
+              <div className="text-white/35 text-xs pl-4">{task.description}</div>
             )}
             <div className="flex flex-wrap gap-1 text-xs pl-4">
               {task.assignee && (
-                <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                <span className="px-1.5 py-0.5 bg-white/[0.05] text-white/60 rounded-md">
                   {task.assignee}
                 </span>
               )}
               {task.dueDate && (
-                <span className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded">
+                <span className="px-1.5 py-0.5 bg-white/[0.05] text-white/50 rounded-md">
                   {task.dueDate}
                 </span>
               )}
-              <span className={`px-1.5 py-0.5 rounded ${
-                task.priority === 'high' ? 'bg-red-100 text-red-700' :
-                task.priority === 'low' ? 'bg-gray-100 text-gray-700' :
-                'bg-yellow-100 text-yellow-700'
+              <span className={`px-1.5 py-0.5 rounded-md ${
+                task.priority === 'high' ? 'bg-red-500/[0.08] text-red-400' :
+                task.priority === 'low' ? 'bg-white/[0.04] text-white/45' :
+                'bg-amber-500/[0.08] text-amber-400'
               }`}>
                 {task.priority === 'high' ? '高' : task.priority === 'low' ? '低' : '中'}
               </span>
             </div>
           </div>
         ))}
-        <div className="flex gap-2 pt-2 border-t">
+        <div className="flex gap-2 pt-2 border-t border-white/[0.04]">
           <Button size="sm" onClick={confirmBatchCreateTasks} disabled={loading}>
             <Check className="h-3 w-3 mr-1" />
             确认批量创建
@@ -527,11 +527,11 @@ export function AIAssistant({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+          <SheetTitle className="flex items-center gap-2 text-white/90">
+            <Sparkles className="h-5 w-5 text-white/45" />
             AI助手
             {memorySummary && memorySummary.teamAssignments.length > 0 && (
-              <span className="text-xs font-normal text-gray-500 ml-2">
+              <span className="text-xs font-normal text-white/30 ml-2">
                 (已记住团队分工)
               </span>
             )}
@@ -542,8 +542,8 @@ export function AIAssistant({
           <div className="flex-1 overflow-y-auto space-y-4 pr-2">
             {loadingHistory ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                <span className="ml-2 text-gray-500">加载历史对话...</span>
+                <Loader2 className="h-6 w-6 animate-spin text-white/40" />
+                <span className="ml-2 text-white/30 text-sm">加载历史对话...</span>
               </div>
             ) : (
               messages.map((message) => (
@@ -554,24 +554,24 @@ export function AIAssistant({
                   }`}
                 >
                   {message.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-primary" />
+                    <div className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center flex-shrink-0 border border-white/[0.08]">
+                      <Bot className="h-4 w-4 text-white/40" />
                     </div>
                   )}
                   <div
-                    className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                    className={`max-w-[80%] rounded-[12px] px-3.5 py-2.5 ${
                       message.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-gray-100'
+                        ? 'bg-white/[0.1] text-white/90 border border-white/[0.12] backdrop-blur-xl'
+                        : 'bg-white/[0.03] text-white/75 border border-white/[0.06] backdrop-blur-xl'
                     }`}
                   >
-                    <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
                     {message.taskData && formatTaskCard(message.taskData)}
                     {message.batchTasks && formatBatchTasksCard(message.batchTasks)}
                   </div>
                   {message.role === 'user' && (
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                      <User className="h-4 w-4 text-primary-foreground" />
+                    <div className="w-8 h-8 rounded-full bg-white/[0.08] flex items-center justify-center flex-shrink-0 border border-white/[0.1]">
+                      <User className="h-4 w-4 text-white/60" />
                     </div>
                   )}
                 </div>
@@ -579,24 +579,18 @@ export function AIAssistant({
             )}
             {loading && (
               <div className="flex gap-2 justify-start">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-primary" />
+                <div className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center border border-white/[0.08]">
+                  <Bot className="h-4 w-4 text-white/40" />
                 </div>
-                <div className="bg-gray-100 rounded-lg px-3 py-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                <div className="bg-white/[0.03] border border-white/[0.06] rounded-[12px] px-3.5 py-2.5 backdrop-blur-xl">
+                  <Loader2 className="h-4 w-4 animate-spin text-white/40" />
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="border-t pt-4">
-            {isListening && (
-              <div className="flex items-center gap-2 mb-2 text-sm text-red-500 animate-pulse">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                正在录音，请说话...
-              </div>
-            )}
+          <div className="border-t border-white/[0.06] pt-4 mt-2">
             <div className="flex gap-2">
               <Input
                 placeholder={isListening ? "正在录音..." : "描述你想创建的任务或询问项目情况..."}
@@ -604,11 +598,11 @@ export function AIAssistant({
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                 disabled={loading || !!pendingTask || !!pendingBatchTasks || loadingHistory}
-                className={isListening ? 'border-red-300 bg-red-50' : ''}
+                className={isListening ? 'border-red-400/25 bg-red-500/[0.04]' : ''}
               />
               {speechSupported && (
                 <Button
-                  variant={isListening ? 'destructive' : 'outline'}
+                  variant={isListening ? 'destructive' : 'default'}
                   size="icon"
                   onClick={isListening ? stopListening : startListening}
                   disabled={loading || !!pendingTask || !!pendingBatchTasks || loadingHistory}
@@ -625,8 +619,8 @@ export function AIAssistant({
                 <Send className="h-4 w-4" />
               </Button>
             </div>
-            <div className="text-xs text-gray-400 mt-2">
-              提示：可以问"项目进度如何？"、"谁的任务最多？"等
+            <div className="text-xs text-white/25 mt-2">
+              提示：可以问&ldquo;项目进度如何？&rdquo;、&ldquo;谁的任务最多？&rdquo;等
               {speechSupported && '，或点击麦克风语音输入'}
             </div>
           </div>

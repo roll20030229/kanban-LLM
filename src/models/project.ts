@@ -18,6 +18,21 @@ const ProjectSchema = new mongoose.Schema({
   milestones: [MilestoneSchema],
   createdBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
+}, {
+  toJSON: {
+    virtuals: true,
+    transform: (_, ret: any) => {
+      ret._id = ret._id.toString()
+      return ret
+    }
+  },
+  toObject: {
+    virtuals: true,
+    transform: (_, ret: any) => {
+      ret._id = ret._id.toString()
+      return ret
+    }
+  }
 })
 
 export default mongoose.models.Project || mongoose.model('Project', ProjectSchema)

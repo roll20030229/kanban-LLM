@@ -132,7 +132,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-500">加载中...</div>
+        <div className="text-white/35 text-sm">加载中...</div>
       </div>
     )
   }
@@ -140,13 +140,13 @@ export default function SettingsPage() {
   if (error) {
     return (
       <div className="p-4 md:p-6 max-w-4xl mx-auto">
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-500/20 bg-white/[0.02] backdrop-blur-xl">
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <AlertCircle className="h-6 w-6 text-red-500" />
+              <AlertCircle className="h-6 w-6 text-red-400" />
               <div>
-                <h3 className="font-medium text-red-800">{error}</h3>
-                <p className="text-sm text-red-600 mt-1">
+                <h3 className="font-medium text-white/90">{error}</h3>
+                <p className="text-sm text-white/40 mt-1">
                   请刷新页面重试或联系管理员。
                 </p>
               </div>
@@ -166,21 +166,21 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900">设置</h1>
+      <h1 className="text-2xl font-bold text-white/90 tracking-tight">设置</h1>
 
-      <Card>
+      <Card className="border-white/[0.06] bg-white/[0.02] backdrop-blur-[30px] shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-white/90">
+            <Bot className="h-5 w-5 text-white/50" />
             AI助手配置
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-white/35 text-sm">
             配置AI模型以启用智能任务创建和项目分析功能
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           <div className="space-y-2">
-            <Label>选择模型</Label>
+            <Label className="text-white/65 text-sm font-medium">选择模型</Label>
             <Select value={aiConfig.modelType} onValueChange={handleModelTypeChange}>
               <SelectTrigger>
                 <SelectValue placeholder="选择AI模型" />
@@ -196,7 +196,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="apiKey">API Key</Label>
+            <Label htmlFor="apiKey" className="text-white/65 text-sm font-medium">API Key</Label>
             <div className="relative">
               <Input
                 id="apiKey"
@@ -209,7 +209,7 @@ export default function SettingsPage() {
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="absolute right-0 top-0 h-full px-3"
+                className="absolute right-0 top-0 h-full px-3 hover:text-white/70"
                 onClick={() => setShowApiKey(!showApiKey)}
               >
                 {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -218,7 +218,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="modelName">模型名称</Label>
+            <Label htmlFor="modelName" className="text-white/65 text-sm font-medium">模型名称</Label>
             <Input
               id="modelName"
               value={aiModelName}
@@ -229,7 +229,7 @@ export default function SettingsPage() {
 
           {aiConfig.modelType === 'custom' && (
             <div className="space-y-2">
-              <Label htmlFor="endpoint">接口地址</Label>
+              <Label htmlFor="endpoint" className="text-white/65 text-sm font-medium">接口地址</Label>
               <Input
                 id="endpoint"
                 value={aiEndpoint}
@@ -239,7 +239,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 pt-2">
             <Button onClick={handleSaveAIConfig} disabled={aiSaving}>
               {aiSaving ? (
                 <span>保存中...</span>
@@ -256,7 +256,7 @@ export default function SettingsPage() {
               )}
             </Button>
             {aiConfig.enabled && (
-              <span className="text-sm text-green-600 flex items-center gap-1">
+              <span className="text-sm text-emerald-400 flex items-center gap-1">
                 <Check className="h-4 w-4" />
                 AI助手已启用
               </span>
@@ -265,48 +265,48 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Separator />
+      <Separator className="bg-white/[0.06]" />
 
-      <Card>
+      <Card className="border-white/[0.06] bg-white/[0.02] backdrop-blur-[30px] shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
         <CardHeader>
-          <CardTitle>项目列表</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-white/90">项目列表</CardTitle>
+          <CardDescription className="text-white/35 text-sm">
             管理您的所有项目。新建项目请点击左侧导航栏的 + 按钮。
           </CardDescription>
         </CardHeader>
         <CardContent>
           {projects.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">暂无项目，点击左侧 + 按钮创建新项目</p>
+            <p className="text-white/30 text-center py-4 text-sm">暂无项目，点击左侧 + 按钮创建新项目</p>
           ) : (
             <div className="space-y-4">
               {projects.map((project) => (
                 <div
                   key={project._id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  className="flex items-center justify-between p-4 border border-white/[0.06] rounded-[12px] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/[0.10] transition-all duration-300"
                 >
                   <div className="flex-1">
-                    <h3 className="font-medium">{project.name}</h3>
+                    <h3 className="font-medium text-white/85">{project.name}</h3>
                     {project.description && (
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-white/35 mt-1">
                         {project.description}
                       </p>
                     )}
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-white/30">
                         分享链接: /share/{project.shareLink}
                       </span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-2"
+                        className="h-6 px-2 hover:text-white/60"
                         onClick={() =>
                           copyShareLink(project.shareLink, project._id)
                         }
                       >
                         {copiedId === project._id ? (
-                          <Check className="h-3 w-3 text-green-500" />
+                          <Check className="h-3 w-3 text-emerald-400" />
                         ) : (
-                          <Copy className="h-3 w-3" />
+                          <Copy className="h-3 w-3 text-white/30" />
                         )}
                       </Button>
                     </div>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-400/60 hover:text-red-400 hover:bg-red-500/8"
                     onClick={() => handleDeleteProject(project._id)}
                   >
                     <Trash2 className="h-4 w-4" />

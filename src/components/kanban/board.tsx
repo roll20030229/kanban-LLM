@@ -14,35 +14,45 @@ import {
   DragEndEvent,
   DragOverEvent,
 } from '@dnd-kit/core'
-import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { useState, useCallback } from 'react'
 import { TaskCard } from './task-card'
 
 const STATUS_ORDER: TaskStatus[] = ['todo', 'in_progress', 'in_review', 'done']
 
+interface DragOverInfo {
+  overId: string
+  position: 'above' | 'below'
+}
+
 interface KanbanBoardProps {
   tasks: Task[]
   onTaskStatusChange?: (taskId: string, newStatus: TaskStatus) => void
+  onTaskReorder?: (reorderData: { id: string; order: number; status: string; version: number }[]) => void
   onAddTask?: (status: TaskStatus) => void
   onEditTask?: (task: Task) => void
   onDeleteTask?: (taskId: string) => void
   readOnly?: boolean
+  isDemo?: boolean
 }
 
 export function KanbanBoard({
   tasks,
   onTaskStatusChange,
+  onTaskReorder,
   onAddTask,
   onEditTask,
   onDeleteTask,
   readOnly,
+  isDemo,
 }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null)
+  const [dragOverInfo, setDragOverInfo] = useState<DragOverInfo | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 3,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -69,14 +79,38 @@ export function KanbanBoard({
     if (!activeTask) return
 
     const isOverColumn = STATUS_ORDER.includes(overId as TaskStatus)
-    if (isOverColumn && activeTask.status !== overId) {
-      onTaskStatusChange?.(activeId, overId as TaskStatus)
+
+    if (isOverColumn) {
+      if (activeTask.status !== overId) {
+        onTaskStatusChange?.(activeId, overId as TaskStatus)
+      }
+      setDragOverInfo(null)
+      return
+    }
+
+    const overTask = tasks.find((t) => t.id === overId)
+    if (overTask) {
+      if (activeTask.status !== overTask.status) {
+        onTaskStatusChange?.(activeId, overTask.status)
+      }
+
+      const overRect = over.rect
+      const activeTranslatedRect = active.rect.current.translated
+      if (overRect && activeTranslatedRect) {
+        const overMidY = overRect.top + overRect.height / 2
+        const activeMidY = activeTranslatedRect.top + activeTranslatedRect.height / 2
+        const position = activeMidY < overMidY ? 'above' : 'below'
+        setDragOverInfo({ overId, position })
+      }
+    } else {
+      setDragOverInfo(null)
     }
   }, [tasks, onTaskStatusChange])
 
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event
     setActiveTask(null)
+    setDragOverInfo(null)
 
     if (!over) return
 
@@ -88,103 +122,94 @@ export function KanbanBoard({
     const activeTask = tasks.find((t) => t.id === activeId)
     if (!activeTask) return
 
+    const isOverColumn = STATUS_ORDER.includes(overId as TaskStatus)
+
+    if (isOverColumn) {
+      const targetStatus = overId as TaskStatus
+      if (activeTask.status === targetStatus) return
+
+      onTaskStatusChange?.(activeId, targetStatus)
+
+      const targetColumnTasks = tasks
+        .filter(t => t.status === targetStatus)
+        .sort((a, b) => a.order - b.order)
+
+      const newColumnTasks = [...targetColumnTasks, { ...activeTask, status: targetStatus }]
+
+      const reorderData = newColumnTasks.map((task, index) => ({
+        id: task.id,
+        order: index,
+        status: task.status,
+        version: task.version,
+      }))
+
+      onTaskReorder?.(reorderData)
+      return
+    }
+
     const overTask = tasks.find((t) => t.id === overId)
-    
-    // 跨列拖拽
-    if (overTask && activeTask.status !== overTask.status) {
+    if (!overTask) return
+
+    const overRect = over.rect
+    const activeTranslatedRect = active.rect.current.translated
+    let insertAfter = false
+    if (overRect && activeTranslatedRect) {
+      const overMidY = overRect.top + overRect.height / 2
+      const activeMidY = activeTranslatedRect.top + activeTranslatedRect.height / 2
+      insertAfter = activeMidY >= overMidY
+    }
+
+    if (activeTask.status !== overTask.status) {
       onTaskStatusChange?.(activeId, overTask.status)
-      
-      try {
-        // 获取目标列的所有任务并重新计算顺序
-        const targetColumnTasks = tasks
-          .filter(t => t.status === overTask.status)
-          .sort((a, b) => a.order - b.order)
-        
-        const overIndex = targetColumnTasks.findIndex(t => t.id === overId)
-        
-        // 重新计算整列的顺序（使用整数序列）
-        const newColumnTasks = [...targetColumnTasks]
-        newColumnTasks.splice(overIndex, 0, { ...activeTask, status: overTask.status })
-        
+
+      const targetColumnTasks = tasks
+        .filter(t => t.status === overTask.status)
+        .sort((a, b) => a.order - b.order)
+
+      const overIndex = targetColumnTasks.findIndex(t => t.id === overId)
+      const insertIndex = insertAfter ? overIndex + 1 : overIndex
+
+      const newColumnTasks = [...targetColumnTasks]
+      newColumnTasks.splice(insertIndex, 0, { ...activeTask, status: overTask.status })
+
+      const reorderData = newColumnTasks.map((task, index) => ({
+        id: task.id,
+        order: index,
+        status: task.status,
+        version: task.version,
+      }))
+
+      onTaskReorder?.(reorderData)
+    } else {
+      const columnTasks = tasks.filter(t => t.status === activeTask.status).sort((a, b) => a.order - b.order)
+      const oldIndex = columnTasks.findIndex(t => t.id === activeId)
+      const overIndex = columnTasks.findIndex(t => t.id === overId)
+
+      if (oldIndex !== -1 && overIndex !== -1) {
+        const newColumnTasks = [...columnTasks]
+        newColumnTasks.splice(oldIndex, 1)
+
+        const adjustedOverIndex = newColumnTasks.findIndex(t => t.id === overId)
+        const insertIndex = insertAfter ? adjustedOverIndex + 1 : adjustedOverIndex
+
+        newColumnTasks.splice(insertIndex, 0, activeTask)
+
         const reorderData = newColumnTasks.map((task, index) => ({
           id: task.id,
           order: index,
           status: task.status,
-          version: task.version, // 添加版本号
+          version: task.version,
         }))
-        
-        const response = await fetch(`/api/projects/${activeTask.projectId}/tasks/reorder`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tasks: reorderData }),
-        })
 
-        if (response.status === 409) {
-          const errorData = await response.json()
-          console.error('版本冲突:', errorData.error)
-          // 提示用户刷新页面
-          alert('任务已被其他用户修改，页面将自动刷新')
-          window.location.reload()
-          return
-        }
-
-        if (!response.ok) {
-          throw new Error('保存任务状态失败')
-        }
-      } catch (error) {
-        console.error('保存任务状态失败:', error)
-        alert('保存失败，请重试')
+        onTaskReorder?.(reorderData)
       }
     }
-    // 同列排序
-    else if (overTask && activeTask.status === overTask.status) {
-      try {
-        const columnTasks = tasks.filter(t => t.status === activeTask.status).sort((a, b) => a.order - b.order)
-        const oldIndex = columnTasks.findIndex(t => t.id === activeId)
-        const newIndex = columnTasks.findIndex(t => t.id === overId)
-        
-        if (oldIndex !== -1 && newIndex !== -1) {
-          // 重新排序
-          const newColumnTasks = [...columnTasks]
-          newColumnTasks.splice(oldIndex, 1)
-          newColumnTasks.splice(newIndex, 0, activeTask)
-          
-          // 批量更新顺序
-          const reorderData = newColumnTasks.map((task, index) => ({
-            id: task.id,
-            order: index,
-            status: task.status,
-            version: task.version, // 添加版本号
-          }))
-          
-          const response = await fetch(`/api/projects/${activeTask.projectId}/tasks/reorder`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tasks: reorderData }),
-          })
-
-          if (response.status === 409) {
-            const errorData = await response.json()
-            console.error('版本冲突:', errorData.error)
-            // 提示用户刷新页面
-            alert('任务已被其他用户修改，页面将自动刷新')
-            window.location.reload()
-            return
-          }
-
-          if (!response.ok) {
-            throw new Error('保存任务顺序失败')
-          }
-        }
-      } catch (error) {
-        console.error('保存任务顺序失败:', error)
-        alert('保存失败，请重试')
-      }
-    }
-  }, [tasks, onTaskStatusChange])
+  }, [tasks, onTaskStatusChange, onTaskReorder])
 
   const getTasksByStatus = (status: TaskStatus) => {
-    return tasks.filter((task) => task.status === status)
+    return tasks
+      .filter((task) => task.status === status)
+      .sort((a, b) => a.order - b.order)
   }
 
   if (readOnly) {
@@ -197,6 +222,7 @@ export function KanbanBoard({
             tasks={getTasksByStatus(status)}
             onEditTask={onEditTask}
             readOnly={readOnly}
+            dragOverInfo={dragOverInfo}
           />
         ))}
       </div>
@@ -221,6 +247,7 @@ export function KanbanBoard({
             onEditTask={onEditTask}
             onDeleteTask={onDeleteTask}
             readOnly={readOnly}
+            dragOverInfo={dragOverInfo}
           />
         ))}
       </div>

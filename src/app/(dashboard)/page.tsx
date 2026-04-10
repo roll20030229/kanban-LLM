@@ -174,7 +174,7 @@ export default function KanbanPage() {
 
   const handleTaskStatusChange = async (taskId: string, newStatus: TaskStatus) => {
     if (isDemo || !currentProject) {
-      setTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t))
+      setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t))
       return
     }
 
@@ -189,6 +189,47 @@ export default function KanbanPage() {
       }
     } catch (error) {
       console.error('更新任务状态失败:', error)
+    }
+  }
+
+  const handleTaskReorder = async (reorderData: { id: string; order: number; status: string; version: number }[]) => {
+    if (isDemo || !currentProject) {
+      setTasks(prevTasks => {
+        const updatedTasks = prevTasks.map(task => {
+          const reorderItem = reorderData.find(item => item.id === task.id)
+          if (reorderItem) {
+            return { ...task, order: reorderItem.order, status: reorderItem.status as TaskStatus }
+          }
+          return task
+        })
+        return updatedTasks
+      })
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${currentProject._id}/tasks/reorder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tasks: reorderData }),
+      })
+
+      if (response.status === 409) {
+        const errorData = await response.json()
+        console.error('版本冲突:', errorData.error)
+        alert('任务已被其他用户修改，页面将自动刷新')
+        window.location.reload()
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error('保存任务顺序失败')
+      }
+
+      fetchTasks()
+    } catch (error) {
+      console.error('保存任务顺序失败:', error)
+      alert('保存失败，请重试')
     }
   }
 
@@ -286,15 +327,15 @@ export default function KanbanPage() {
   if (projectLoading || loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-500">加载中...</div>
+        <div className="text-muted-foreground">加载中...</div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen relative">
       {isDemo && (
-        <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-center text-sm text-yellow-800">
+        <div className="bg-warning/10 border-b border-warning/30 px-4 py-2 text-center text-sm text-warning backdrop-blur-sm">
           演示模式 - 数据仅保存在内存中，刷新后重置。请创建项目以使用完整功能。
         </div>
       )}
@@ -310,9 +351,11 @@ export default function KanbanPage() {
         <KanbanBoard
           tasks={filteredTasks}
           onTaskStatusChange={handleTaskStatusChange}
+          onTaskReorder={handleTaskReorder}
           onAddTask={handleAddTask}
           onEditTask={handleEditTask}
           onDeleteTask={handleDeleteTask}
+          isDemo={isDemo}
         />
       </div>
 

@@ -6,7 +6,7 @@ import { ProjectProvider } from '@/contexts/project-context'
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider refetchInterval={0} refetchOnWindowFocus={false}>
       <ProjectProvider>{children}</ProjectProvider>
     </SessionProvider>
   )

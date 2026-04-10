@@ -2,7 +2,7 @@
 
 import { Task, TaskStatus } from '@/types'
 import { TaskCard } from './task-card'
-import { cn, statusColors, statusLabels } from '@/lib/utils'
+import { cn, statusLabels } from '@/lib/utils'
 import { Plus } from 'lucide-react'
 import {
   SortableContext,
@@ -19,6 +19,39 @@ interface ColumnProps {
   onEditTask?: (task: Task) => void
   onDeleteTask?: (taskId: string) => void
   readOnly?: boolean
+  dragOverInfo?: { overId: string; position: 'above' | 'below' } | null
+}
+
+const columnStyles: Record<TaskStatus, { 
+  border: string; 
+  indicator: string;
+  headerBg: string;
+  glassTint: string;
+}> = {
+  todo: {
+    border: 'data-[isover=true]:border-[#4f8fff]/30 data-[isover=true]:shadow-[0_0_30px_rgba(79,143,255,0.08)]',
+    indicator: 'bg-[#4f8fff]',
+    headerBg: 'from-[#4f8fff]/8 to-transparent',
+    glassTint: 'from-[#4f8fff]/[0.06] via-white/[0.04] to-white/[0.02]',
+  },
+  in_progress: {
+    border: 'data-[isover=true]:border-[#a855f7]/30 data-[isover=true]:shadow-[0_0_30px_rgba(168,85,247,0.08)]',
+    indicator: 'bg-[#a855f7]',
+    headerBg: 'from-[#a855f7]/8 to-transparent',
+    glassTint: 'from-[#a855f7]/[0.06] via-white/[0.04] to-white/[0.02]',
+  },
+  in_review: {
+    border: 'data-[isover=true]:border-[#f59e0b]/30 data-[isover=true]:shadow-[0_0_30px_rgba(245,158,11,0.08)]',
+    indicator: 'bg-[#f59e0b]',
+    headerBg: 'from-[#f59e0b]/8 to-transparent',
+    glassTint: 'from-[#f59e0b]/[0.06] via-white/[0.04] to-white/[0.02]',
+  },
+  done: {
+    border: 'data-[isover=true]:border-[#22d3ee]/30 data-[isover=true]:shadow-[0_0_30px_rgba(34,211,238,0.08)]',
+    indicator: 'bg-[#22d3ee]',
+    headerBg: 'from-[#22d3ee]/8 to-transparent',
+    glassTint: 'from-[#22d3ee]/[0.06] via-white/[0.04] to-white/[0.02]',
+  },
 }
 
 export function Column({
@@ -28,6 +61,7 @@ export function Column({
   onEditTask,
   onDeleteTask,
   readOnly,
+  dragOverInfo,
 }: ColumnProps) {
   const {
     attributes,
@@ -49,22 +83,36 @@ export function Column({
     transition,
   }
 
+  const columnStyle = columnStyles[status]
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
+      data-isover={isOver}
       className={cn(
-        'flex-shrink-0 w-72 md:w-80 bg-gray-50 rounded-lg flex flex-col max-h-full',
-        isOver && 'ring-2 ring-primary ring-opacity-50'
+        'flex-shrink-0 w-72 md:w-80 rounded-[14px] flex flex-col max-h-full border transition-all duration-300',
+        'bg-gradient-to-b backdrop-blur-[16px] backdrop-saturate-[1.4]',
+        'border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.06)]',
+        columnStyle.glassTint,
+        columnStyle.border,
+        isOver && 'ring-2 ring-white/12 ring-offset-2 ring-offset-black'
       )}
     >
-      <div className="p-3 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className={cn('w-3 h-3 rounded-full', statusColors[status])} />
-            <h3 className="font-medium text-gray-900">{statusLabels[status]}</h3>
-            <span className="text-sm text-gray-500 bg-white px-2 py-0.5 rounded-full">
+      <div className={cn(
+        'p-3.5 border-b border-white/[0.06] relative overflow-hidden',
+        'before:absolute before:inset-0 before:bg-gradient-to-r before:opacity-100',
+        columnStyle.headerBg
+      )}>
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-2.5">
+            <div className={cn(
+              'w-2.5 h-2.5 rounded-full',
+              columnStyle.indicator,
+              'opacity-70'
+            )} />
+            <h3 className="font-medium text-white/90 text-sm">{statusLabels[status]}</h3>
+            <span className="text-xs text-white/40 bg-white/[0.04] px-2 py-0.5 rounded-full border border-white/[0.06] font-normal">
               {tasks.length}
             </span>
           </div>
@@ -72,8 +120,8 @@ export function Column({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
-              onClick={onAddTask}
+              className="h-7 w-7 hover:bg-white/6"
+              onClick={() => onAddTask?.()}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -95,12 +143,13 @@ export function Column({
               onClick={() => onEditTask?.(task)}
               onDelete={() => onDeleteTask?.(task.id)}
               readOnly={readOnly}
+              dragPosition={dragOverInfo?.overId === task.id ? dragOverInfo.position : null}
             />
           ))}
         </SortableContext>
 
         {tasks.length === 0 && (
-          <div className="flex items-center justify-center h-24 text-gray-400 text-sm">
+          <div className="flex items-center justify-center h-24 text-white/25 text-sm border border-dashed border-white/[0.06] rounded-[10px] bg-white/[0.01]">
             暂无任务
           </div>
         )}

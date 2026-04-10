@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Plus, Search, Filter, Bot } from 'lucide-react'
@@ -35,27 +36,32 @@ export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI }:
   }
 
   return (
-    <header className="h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4">
+    <header className={cn(
+      'h-14 flex items-center justify-between px-6 relative overflow-hidden',
+      'bg-white/[0.02] backdrop-blur-[30px]',
+      'border-b border-white/[0.06]',
+      'after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-white/[0.08] after:to-transparent'
+    )}>
       <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-gray-900">
+        <h1 className="text-base font-semibold text-white/90 tracking-tight">
           {projectName || '看板'}
         </h1>
       </div>
 
       <div className="flex items-center gap-3">
         <div className="relative hidden sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
           <Input
             placeholder="搜索任务..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="pl-9 w-48 md:w-64 h-8"
+            className="pl-9 w-48 md:w-64 h-9"
           />
         </div>
 
         <Select onValueChange={onFilter}>
-          <SelectTrigger className="w-28 h-8">
-            <Filter className="h-4 w-4 mr-1" />
+          <SelectTrigger className="w-28 h-9">
+            <Filter className="h-4 w-4 mr-1 text-white/50" />
             <SelectValue placeholder="筛选" />
           </SelectTrigger>
           <SelectContent>
@@ -72,23 +78,24 @@ export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI }:
               <Button
                 size="sm"
                 variant="outline"
-                className="h-8 w-8 p-0"
+                className="h-9 w-9 p-0"
                 onClick={onOpenAI}
               >
                 <Bot className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="bottom">
               AI助手
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
 
-        <Button size="sm" onClick={onNewTask} className="h-8">
-          <Plus className="h-4 w-4 mr-1" />
+        <Button size="sm" onClick={onNewTask} className="h-9">
+          <Plus className="h-4 w-4 mr-1.5" />
           新任务
         </Button>
       </div>
     </header>
   )
 }
+
