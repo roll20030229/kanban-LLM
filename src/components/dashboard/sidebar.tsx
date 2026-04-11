@@ -25,6 +25,7 @@ import { useState } from 'react'
 import { useProject } from '@/contexts/project-context'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { NewProjectDialog } from './new-project-dialog'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const navItems = [
   { href: '/', icon: LayoutDashboard, label: '看板' },
@@ -115,27 +116,34 @@ export function Sidebar() {
             </button>
 
             <ScrollArea className="flex-1">
-              <div className="flex flex-col items-center space-y-1 pb-2">
-                {loading ? (
-                  <div className="w-8 h-8 rounded-[8px] bg-white/[0.04] animate-pulse border border-white/[0.06]" />
-                ) : (
-                  projects.map((project) => (
-                    <button
-                      key={project._id}
-                      onClick={() => setCurrentProject(project)}
-                      className={cn(
-                        'w-10 h-10 flex items-center justify-center rounded-[10px] transition-all duration-300 text-sm font-medium',
-                        currentProject?._id === project._id
-                          ? 'bg-white/[0.1] text-white border border-white/[0.15] shadow-[0_4px_12px_rgba(255,255,255,0.04)]'
-                          : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border border-transparent hover:border-white/[0.08]'
-                      )}
-                      title={project.name}
-                    >
-                      {project.name.charAt(0).toUpperCase()}
-                    </button>
-                  ))
-                )}
-              </div>
+              <TooltipProvider delayDuration={300}>
+                <div className="flex flex-col items-center space-y-1 pb-2">
+                  {loading ? (
+                    <div className="w-8 h-8 rounded-[8px] bg-white/[0.04] animate-pulse border border-white/[0.06]" />
+                  ) : (
+                    projects.map((project) => (
+                      <Tooltip key={project._id}>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => setCurrentProject(project)}
+                            className={cn(
+                              'w-10 h-10 flex items-center justify-center rounded-[10px] transition-all duration-300 text-sm font-medium',
+                              currentProject?._id === project._id
+                                ? 'bg-white/[0.1] text-white border border-white/[0.15] shadow-[0_4px_12px_rgba(255,255,255,0.04)]'
+                                : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border border-transparent hover:border-white/[0.08]'
+                            )}
+                          >
+                            {project.name.charAt(0).toUpperCase()}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="bg-black/80 border-white/10 text-white/80 backdrop-blur-xl">
+                          <p>{project.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ))
+                  )}
+                </div>
+              </TooltipProvider>
             </ScrollArea>
           </div>
         </div>

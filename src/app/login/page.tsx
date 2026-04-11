@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { CyberBackgroundEffect } from '@/components/ui/cyber-effects'
 
 const loginSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
@@ -99,95 +100,89 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
-      <div
-        className="absolute inset-0 opacity-[0.015]"
-        style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-          backgroundSize: '40px 40px',
-        }}
-      />
+    <CyberBackgroundEffect>
+      <div className="min-h-screen relative z-10 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-white/[0.03] backdrop-blur-[30px] border-white/[0.08] shadow-[0_8px_40px_rgba(0,0,0,0.4)] relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/[0.12] before:to-transparent">
+          <CardHeader className="text-center pb-2">
+            <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mx-auto mb-4 bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/[0.12] relative overflow-hidden">
+              <span className="text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent">V</span>
+            </div>
+            <CardTitle className="text-2xl text-white/90 tracking-tight">Vibe Kanban</CardTitle>
+            <CardDescription className="text-white/35 text-sm">项目管理看板工具</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-white/[0.03] border border-white/[0.06] p-1 h-10">
+                <TabsTrigger 
+                  value="login" 
+                  className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-white/90 data-[state=active]:border data-[state=active]:border-white/[0.08] text-white/45 transition-all duration-200 rounded-lg"
+                >
+                  登录
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="register" 
+                  className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-white/90 data-[state=active]:border data-[state=active]:border-white/[0.08] text-white/45 transition-all duration-200 rounded-lg"
+                >
+                  注册
+                </TabsTrigger>
+              </TabsList>
 
-      <Card className="w-full max-w-md bg-white/[0.03] backdrop-blur-[30px] border-white/[0.08] shadow-[0_8px_40px_rgba(0,0,0,0.4)] relative overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/[0.12] before:to-transparent">
-        <CardHeader className="text-center pb-2">
-          <div className="w-14 h-14 rounded-[14px] flex items-center justify-center mx-auto mb-4 bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/[0.12] relative overflow-hidden">
-            <span className="text-xl font-bold bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent">V</span>
-          </div>
-          <CardTitle className="text-2xl text-white/90 tracking-tight">Vibe Kanban</CardTitle>
-          <CardDescription className="text-white/35 text-sm">项目管理看板工具</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-white/[0.03] border border-white/[0.06] p-1 h-10">
-              <TabsTrigger 
-                value="login" 
-                className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-white/90 data-[state=active]:border data-[state=active]:border-white/[0.08] text-white/45 transition-all duration-200 rounded-lg"
-              >
-                登录
-              </TabsTrigger>
-              <TabsTrigger 
-                value="register" 
-                className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-white/90 data-[state=active]:border data-[state=active]:border-white/[0.08] text-white/45 transition-all duration-200 rounded-lg"
-              >
-                注册
-              </TabsTrigger>
-            </TabsList>
+              <TabsContent value="login">
+                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4 mt-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email" className="text-white/65 text-sm font-medium">邮箱</Label>
+                    <Input id="login-email" type="email" placeholder="your@email.com" {...loginForm.register('email')} />
+                    {loginForm.formState.errors.email && (
+                      <p className="text-sm text-red-400">{loginForm.formState.errors.email.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password" className="text-white/65 text-sm font-medium">密码</Label>
+                    <Input id="login-password" type="password" placeholder="••••••" {...loginForm.register('password')} />
+                    {loginForm.formState.errors.password && (
+                      <p className="text-sm text-red-400">{loginForm.formState.errors.password.message}</p>
+                    )}
+                  </div>
+                  {error && <p className="text-sm text-red-400 text-center">{error}</p>}
+                  <Button type="submit" className="w-full h-10" disabled={loading}>
+                    {loading ? '登录中...' : '登录'}
+                  </Button>
+                </form>
+              </TabsContent>
 
-            <TabsContent value="login">
-              <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4 mt-5">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email" className="text-white/65 text-sm font-medium">邮箱</Label>
-                  <Input id="login-email" type="email" placeholder="your@email.com" {...loginForm.register('email')} />
-                  {loginForm.formState.errors.email && (
-                    <p className="text-sm text-red-400">{loginForm.formState.errors.email.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password" className="text-white/65 text-sm font-medium">密码</Label>
-                  <Input id="login-password" type="password" placeholder="••••••" {...loginForm.register('password')} />
-                  {loginForm.formState.errors.password && (
-                    <p className="text-sm text-red-400">{loginForm.formState.errors.password.message}</p>
-                  )}
-                </div>
-                {error && <p className="text-sm text-red-400 text-center">{error}</p>}
-                <Button type="submit" className="w-full h-10" disabled={loading}>
-                  {loading ? '登录中...' : '登录'}
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="register">
-              <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4 mt-5">
-                <div className="space-y-2">
-                  <Label htmlFor="register-name" className="text-white/65 text-sm font-medium">姓名</Label>
-                  <Input id="register-name" placeholder="您的姓名" {...registerForm.register('name')} />
-                  {registerForm.formState.errors.name && (
-                    <p className="text-sm text-red-400">{registerForm.formState.errors.name.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-email" className="text-white/65 text-sm font-medium">邮箱</Label>
-                  <Input id="register-email" type="email" placeholder="your@email.com" {...registerForm.register('email')} />
-                  {registerForm.formState.errors.email && (
-                    <p className="text-sm text-red-400">{registerForm.formState.errors.email.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-password" className="text-white/65 text-sm font-medium">密码</Label>
-                  <Input id="register-password" type="password" placeholder="••••••" {...registerForm.register('password')} />
-                  {registerForm.formState.errors.password && (
-                    <p className="text-sm text-red-400">{registerForm.formState.errors.password.message}</p>
-                  )}
-                </div>
-                {error && <p className="text-sm text-red-400 text-center">{error}</p>}
-                <Button type="submit" className="w-full h-10" disabled={loading}>
-                  {loading ? '注册中...' : '注册'}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+              <TabsContent value="register">
+                <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4 mt-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="register-name" className="text-white/65 text-sm font-medium">姓名</Label>
+                    <Input id="register-name" placeholder="您的姓名" {...registerForm.register('name')} />
+                    {registerForm.formState.errors.name && (
+                      <p className="text-sm text-red-400">{registerForm.formState.errors.name.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email" className="text-white/65 text-sm font-medium">邮箱</Label>
+                    <Input id="register-email" type="email" placeholder="your@email.com" {...registerForm.register('email')} />
+                    {registerForm.formState.errors.email && (
+                      <p className="text-sm text-red-400">{registerForm.formState.errors.email.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password" className="text-white/65 text-sm font-medium">密码</Label>
+                    <Input id="register-password" type="password" placeholder="••••••" {...registerForm.register('password')} />
+                    {registerForm.formState.errors.password && (
+                      <p className="text-sm text-red-400">{registerForm.formState.errors.password.message}</p>
+                    )}
+                  </div>
+                  {error && <p className="text-sm text-red-400 text-center">{error}</p>}
+                  <Button type="submit" className="w-full h-10" disabled={loading}>
+                    {loading ? '注册中...' : '注册'}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+    </CyberBackgroundEffect>
   )
 }

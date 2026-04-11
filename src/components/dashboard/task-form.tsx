@@ -51,6 +51,7 @@ interface TaskFormProps {
   onOpenChange: (open: boolean) => void
   task?: Task | null
   defaultStatus?: TaskStatus
+  members?: string[]
   onSubmit: (data: TaskFormSubmitData) => Promise<void>
 }
 
@@ -59,9 +60,12 @@ export function TaskForm({
   onOpenChange,
   task,
   defaultStatus = 'todo',
+  members = [],
   onSubmit,
 }: TaskFormProps) {
   const [loading, setLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [isDirty, setIsDirty] = useState(false)
 
   const {
     register,
@@ -82,6 +86,17 @@ export function TaskForm({
       tags: '',
     },
   })
+
+  const watchedValues = watch()
+
+  useEffect(() => {
+    const hasChanges = watchedValues.title !== '' ||
+      watchedValues.description !== '' ||
+      watchedValues.assignee !== '' ||
+      watchedValues.dueDate !== '' ||
+      watchedValues.tags !== ''
+    setIsDirty(hasChanges)
+  }, [watchedValues.title, watchedValues.description, watchedValues.assignee, watchedValues.dueDate, watchedValues.tags])
 
   useEffect(() => {
     if (task) {
@@ -107,28 +122,39 @@ export function TaskForm({
         tags: '',
       })
     }
+    setSubmitError(null)
+    setIsDirty(false)
   }, [task, defaultStatus, reset])
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && isDirty && !loading) {
+      const confirmed = window.confirm('有未保存的更改，确定要关闭吗？')
+      if (!confirmed) return
+    }
+    onOpenChange(newOpen)
+  }
 
   const handleFormSubmit = async (data: TaskFormData) => {
     setLoading(true)
+    setSubmitError(null)
     try {
       await onSubmit({
         ...data,
         tags: data.tags
-          ? data.tags.split(',').map((t) => t.trim())
+          ? data.tags.split(/[,，]/).map((t) => t.trim()).filter(Boolean)
           : undefined,
       })
       onOpenChange(false)
       reset()
-    } catch (error) {
-      console.error('提交失败:', error)
+    } catch (error: any) {
+      setSubmitError(error.message || '提交失败，请重试')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="text-white/90">{task ? '编辑任务' : '新建任务'}</DialogTitle>
@@ -204,11 +230,30 @@ export function TaskForm({
 
           <div className="space-y-2">
             <Label htmlFor="assignee" className="text-white/65 text-sm font-medium">负责人</Label>
-            <Input
-              id="assignee"
-              {...register('assignee')}
-              placeholder="输入负责人"
-            />
+            {members.length > 0 ? (
+              <Select
+                value={watch('assignee') || '_none'}
+                onValueChange={(value) => setValue('assignee', value === '_none' ? '' : value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择负责人" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">未指定</SelectItem>
+                  {members.map((member) => (
+                    <SelectItem key={member} value={member}>
+                      {member}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                id="assignee"
+                {...register('assignee')}
+                placeholder="输入负责人"
+              />
+            )}
           </div>
 
           <div className="space-y-2">
@@ -230,10 +275,13 @@ export function TaskForm({
           </div>
 
           <div className="flex justify-end gap-2.5 pt-4 border-t border-white/[0.05]">
+            {submitError && (
+              <span className="text-sm text-red-400 flex-1">{submitError}</span>
+            )}
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
             >
               取消
             </Button>

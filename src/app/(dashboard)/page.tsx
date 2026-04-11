@@ -300,9 +300,12 @@ export default function KanbanPage() {
       body: JSON.stringify(data),
     })
 
-    if (res.ok) {
-      fetchTasks()
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: '操作失败' }))
+      throw new Error(errorData.error || '操作失败，请重试')
     }
+
+    fetchTasks()
   }
 
   const handleSearch = (query: string) => {
@@ -365,6 +368,7 @@ export default function KanbanPage() {
         task={selectedTask}
         defaultStatus={defaultStatus}
         onSubmit={handleTaskFormSubmit}
+        members={members}
       />
 
       <AIAssistant

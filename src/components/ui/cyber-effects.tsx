@@ -3,42 +3,56 @@
 import { useEffect, useRef, useState, ReactNode, useCallback } from 'react'
 import { styled, keyframes, css } from '@/lib/stitches.config'
 
-const auroraFlow = keyframes({
+const curtainSway1 = keyframes({
   '0%, 100%': {
-    transform: 'translateX(-15%) translateY(2%) skewX(-4deg) scale(1)',
-    opacity: '0.6',
+    transform: 'skewX(-3deg) translateX(-2%) scaleY(1)',
+    opacity: '0.80',
   },
-  '20%': {
-    transform: 'translateX(3%) translateY(-4%) skewX(2deg) scale(1.04)',
-    opacity: '0.82',
+  '25%': {
+    transform: 'skewX(2deg) translateX(1%) scaleY(1.02)',
+    opacity: '0.92',
   },
-  '40%': {
-    transform: 'translateX(12%) translateY(2%) skewX(-3deg) scale(1.02)',
-    opacity: '0.55',
-  },
-  '60%': {
-    transform: 'translateX(5%) translateY(-3%) skewX(3deg) scale(1.06)',
+  '50%': {
+    transform: 'skewX(-1deg) translateX(3%) scaleY(0.98)',
     opacity: '0.72',
   },
-  '80%': {
-    transform: 'translateX(-8%) translateY(4%) skewX(-2deg) scale(1.01)',
-    opacity: '0.48',
+  '75%': {
+    transform: 'skewX(3deg) translateX(-1%) scaleY(1.01)',
+    opacity: '0.88',
   },
 })
 
-const auroraFlowSlow = keyframes({
+const curtainSway2 = keyframes({
   '0%, 100%': {
-    transform: 'translateX(10%) translateY(-3%) skewX(3deg) scale(1.03)',
-    opacity: '0.45',
+    transform: 'skewX(2deg) translateX(1%) scaleY(1.01)',
+    opacity: '0.70',
   },
-  '33%': {
-    transform: 'translateX(-8%) translateY(4%) skewX(-4deg) scale(1.06)',
+  '35%': {
+    transform: 'skewX(-3deg) translateX(-3%) scaleY(0.97)',
+    opacity: '0.85',
+  },
+  '70%': {
+    transform: 'skewX(1deg) translateX(2%) scaleY(1.03)',
     opacity: '0.65',
   },
-  '66%': {
-    transform: 'translateX(12%) translateY(-2%) skewX(2deg) scale(1.01)',
-    opacity: '0.50',
+})
+
+const curtainSway3 = keyframes({
+  '0%, 100%': {
+    transform: 'skewX(-2deg) translateX(2%) scaleY(1)',
+    opacity: '0.62',
   },
+  '50%': {
+    transform: 'skewX(4deg) translateX(-2%) scaleY(1.04)',
+    opacity: '0.82',
+  },
+})
+
+const auroraBreathe = keyframes({
+  '0%, 100%': { opacity: '0.65', filter: 'blur(50px) brightness(1)' },
+  '30%': { opacity: '0.88', filter: 'blur(45px) brightness(1.15)' },
+  '50%': { opacity: '1', filter: 'blur(40px) brightness(1.25)' },
+  '70%': { opacity: '0.82', filter: 'blur(46px) brightness(1.08)' },
 })
 
 const dotPulse = keyframes({
@@ -60,41 +74,56 @@ const StitchBackground = styled('div', {
 
 const AuroraLayer = styled('div', {
   position: 'absolute',
-  bottom: '-20%',
-  left: '-20%',
-  right: '-20%',
-  height: '70%',
+  bottom: '0',
+  left: '-15%',
+  right: '-15%',
+  height: '75%',
   pointerEvents: 'none',
-  filter: 'blur(60px)',
+  animation: `${auroraBreathe} 16s ease-in-out infinite`,
+  willChange: 'opacity, filter',
 })
 
-const AuroraBlob = styled('div', {
+const AuroraCurtain = styled('div', {
   position: 'absolute',
-  borderRadius: '50%',
+  bottom: '0',
   willChange: 'transform, opacity',
   variants: {
-    color: {
-      blue: {
-        background: 'radial-gradient(ellipse, rgba(79, 143, 255, 0.7) 0%, rgba(79, 143, 255, 0.3) 30%, transparent 70%)',
+    glow: {
+      blueLeft: {
+        background: 'linear-gradient(to top, rgba(30, 60, 180, 0.92) 0%, rgba(50, 80, 200, 0.75) 15%, rgba(80, 60, 180, 0.55) 35%, rgba(100, 50, 170, 0.30) 55%, rgba(80, 40, 140, 0.12) 75%, transparent 95%)',
       },
-      purple: {
-        background: 'radial-gradient(ellipse, rgba(168, 85, 247, 0.65) 0%, rgba(168, 85, 247, 0.28) 30%, transparent 70%)',
+      purpleCenter: {
+        background: 'linear-gradient(to top, rgba(120, 50, 200, 0.88) 0%, rgba(150, 60, 210, 0.72) 15%, rgba(180, 70, 200, 0.55) 30%, rgba(200, 80, 190, 0.35) 50%, rgba(170, 60, 170, 0.15) 72%, transparent 92%)',
       },
-      cyan: {
-        background: 'radial-gradient(ellipse, rgba(34, 211, 238, 0.55) 0%, rgba(34, 211, 238, 0.22) 30%, transparent 70%)',
+      pinkPeak: {
+        background: 'linear-gradient(to top, rgba(200, 60, 180, 0.85) 0%, rgba(230, 80, 170, 0.78) 12%, rgba(250, 100, 160, 0.60) 28%, rgba(240, 120, 180, 0.38) 48%, rgba(200, 100, 180, 0.15) 68%, transparent 90%)',
       },
-      pink: {
-        background: 'radial-gradient(ellipse, rgba(236, 72, 153, 0.45) 0%, rgba(236, 72, 153, 0.18) 30%, transparent 70%)',
+      magentaCyan: {
+        background: 'linear-gradient(to top, rgba(180, 50, 200, 0.80) 0%, rgba(210, 80, 190, 0.65) 12%, rgba(220, 120, 200, 0.48) 25%, rgba(160, 160, 220, 0.42) 40%, rgba(80, 200, 230, 0.55) 55%, rgba(40, 190, 220, 0.30) 72%, transparent 92%)',
+      },
+      cyanBright: {
+        background: 'linear-gradient(to top, rgba(40, 200, 240, 0.90) 0%, rgba(50, 210, 245, 0.78) 12%, rgba(60, 220, 240, 0.58) 28%, rgba(50, 200, 230, 0.35) 48%, rgba(40, 170, 210, 0.15) 70%, transparent 92%)',
+      },
+      cyanRight: {
+        background: 'linear-gradient(to top, rgba(30, 180, 230, 0.82) 0%, rgba(40, 190, 235, 0.65) 15%, rgba(50, 180, 220, 0.45) 32%, rgba(60, 150, 200, 0.25) 52%, rgba(50, 120, 180, 0.10) 72%, transparent 90%)',
+      },
+      blueRight: {
+        background: 'linear-gradient(to top, rgba(40, 80, 200, 0.70) 0%, rgba(50, 100, 210, 0.55) 18%, rgba(60, 90, 190, 0.35) 38%, rgba(50, 70, 160, 0.15) 60%, transparent 88%)',
+      },
+      deepBase: {
+        background: 'linear-gradient(to top, rgba(20, 20, 80, 0.90) 0%, rgba(30, 30, 100, 0.60) 20%, rgba(40, 25, 110, 0.30) 45%, transparent 80%)',
       },
     },
-    speed: {
-      slow: {},
-      slower: {},
+    sway: {
+      s1: {},
+      s2: {},
+      s3: {},
     },
   },
   compoundVariants: [
-    { speed: 'slow', css: { animation: `${auroraFlow} 18s ease-in-out infinite` } },
-    { speed: 'slower', css: { animation: `${auroraFlowSlow} 25s ease-in-out infinite` } },
+    { sway: 's1', css: { animation: `${curtainSway1} 28s ease-in-out infinite` } },
+    { sway: 's2', css: { animation: `${curtainSway2} 35s ease-in-out infinite` } },
+    { sway: 's3', css: { animation: `${curtainSway3} 42s ease-in-out infinite` } },
   ],
 })
 
@@ -305,48 +334,84 @@ export function CyberBackgroundEffect({ children }: StitchBackgroundProps) {
     <>
       <StitchBackground>
         <AuroraLayer>
-          <AuroraBlob
-            color="blue"
-            speed="slow"
+          <AuroraCurtain
+            glow="deepBase"
+            sway="s3"
             css={{
-              width: '700px',
-              height: '500px',
-              left: '5%',
-              bottom: '10%',
+              width: '130%',
+              height: '100%',
+              left: '-15%',
               animationDelay: '0s',
             }}
           />
-          <AuroraBlob
-            color="purple"
-            speed="slower"
+          <AuroraCurtain
+            glow="blueLeft"
+            sway="s1"
             css={{
-              width: '600px',
-              height: '450px',
-              left: '35%',
-              bottom: '5%',
-              animationDelay: '-6s',
+              width: '28%',
+              height: '95%',
+              left: '-5%',
+              animationDelay: '-3s',
             }}
           />
-          <AuroraBlob
-            color="cyan"
-            speed="slow"
+          <AuroraCurtain
+            glow="purpleCenter"
+            sway="s2"
             css={{
-              width: '550px',
-              height: '400px',
-              left: '60%',
-              bottom: '15%',
-              animationDelay: '-12s',
+              width: '25%',
+              height: '90%',
+              left: '18%',
+              animationDelay: '-10s',
             }}
           />
-          <AuroraBlob
-            color="pink"
-            speed="slower"
+          <AuroraCurtain
+            glow="pinkPeak"
+            sway="s1"
             css={{
-              width: '480px',
-              height: '350px',
-              left: '75%',
-              bottom: '0%',
+              width: '22%',
+              height: '85%',
+              left: '38%',
               animationDelay: '-18s',
+            }}
+          />
+          <AuroraCurtain
+            glow="magentaCyan"
+            sway="s3"
+            css={{
+              width: '26%',
+              height: '92%',
+              left: '52%',
+              animationDelay: '-25s',
+            }}
+          />
+          <AuroraCurtain
+            glow="cyanBright"
+            sway="s2"
+            css={{
+              width: '24%',
+              height: '88%',
+              left: '68%',
+              animationDelay: '-8s',
+            }}
+          />
+          <AuroraCurtain
+            glow="cyanRight"
+            sway="s1"
+            css={{
+              width: '20%',
+              height: '82%',
+              left: '82%',
+              animationDelay: '-15s',
+            }}
+          />
+          <AuroraCurtain
+            glow="blueRight"
+            sway="s3"
+            css={{
+              width: '18%',
+              height: '78%',
+              left: '92%',
+              animationDelay: '-30s',
             }}
           />
         </AuroraLayer>

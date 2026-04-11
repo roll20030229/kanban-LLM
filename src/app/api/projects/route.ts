@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/db'
 import Project from '@/models/project'
 import { auth } from '@/lib/auth'
 import { generateShareLink } from '@/lib/utils'
+import { projectSchema } from '@/lib/validations'
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,7 +32,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, milestones } = body
+    const validation = projectSchema.safeParse(body)
+
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0]?.message || '参数验证失败'
+      return NextResponse.json({ error: errorMessage }, { status: 400 })
+    }
+
+    const { name, description, milestones } = validation.data
 
     await connectDB()
 
