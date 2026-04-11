@@ -6,12 +6,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -128,14 +128,14 @@ export function TaskForm({
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="text-white/90">{task ? '编辑任务' : '新建任务'}</SheetTitle>
-          <SheetDescription className="text-white/40">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md overflow-y-auto max-h-[90vh]">
+        <DialogHeader>
+          <DialogTitle className="text-white/90">{task ? '编辑任务' : '新建任务'}</DialogTitle>
+          <DialogDescription className="text-white/40">
             {task ? '修改任务信息' : '创建一个新的任务'}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
@@ -242,7 +242,7 @@ export function TaskForm({
             </Button>
           </div>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }

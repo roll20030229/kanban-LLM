@@ -19,7 +19,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-[10px] border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-[#f0f0f5] ring-offset-black transition-all duration-250 placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/22 focus:shadow-[0_0_0_3px_rgba(255,255,255,0.06),0_0_20px_rgba(79,143,255,0.08)] focus:bg-white/[0.07] disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 backdrop-blur-[16px] saturate-[180%]",
+      "flex h-10 w-full items-center justify-between rounded-[10px] border border-white/10 bg-white/[0.08] px-3 py-2 text-sm text-[#f0f0f5] ring-offset-black transition-all duration-250 placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/22 focus:shadow-[0_0_0_3px_rgba(255,255,255,0.06),0_0_20px_rgba(79,143,255,0.08)] focus:bg-white/[0.12] disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 backdrop-blur-[16px] saturate-[180%]",
       className
     )}
     {...props}
@@ -75,7 +75,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-[14px] border border-white/10 bg-white/[0.06] text-[#f0f0f5] shadow-[0_24px_80px_rgba(0,0,0,0.6)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1 backdrop-blur-[24px] saturate-[200%]",
+        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-[14px] border border-white/10 bg-[#0c0c1a]/90 text-[#f0f0f5] shadow-[0_24px_80px_rgba(0,0,0,0.6)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1 backdrop-blur-[24px] saturate-[200%]",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className

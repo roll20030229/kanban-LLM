@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',') 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
   : ['http://localhost:3000', 'http://localhost:3001']
 
 export function middleware(request: NextRequest) {
@@ -14,20 +14,25 @@ export function middleware(request: NextRequest) {
   }
 
   const protectedPaths = ['/', '/settings', '/stats']
-  const isProtectedPath = protectedPaths.some(path => pathname === path)
+  const isProtectedPath = protectedPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  )
 
   const authPaths = ['/login']
-  const isAuthPath = authPaths.some(path => pathname === path)
+  const isAuthPath = authPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  )
 
   const sharePath = pathname.startsWith('/share/')
   if (sharePath) {
     return NextResponse.next()
   }
 
-  const sessionToken = request.cookies.get('next-auth.session-token') || 
-                      request.cookies.get('__Secure-next-auth.session-token') ||
-                      request.cookies.get('authjs.session-token') ||
-                      request.cookies.get('__Secure-authjs.session-token')
+  const sessionToken =
+    request.cookies.get('next-auth.session-token') ||
+    request.cookies.get('__Secure-next-auth.session-token') ||
+    request.cookies.get('authjs.session-token') ||
+    request.cookies.get('__Secure-authjs.session-token')
 
   if (isAuthPath) {
     if (sessionToken) {
@@ -38,14 +43,18 @@ export function middleware(request: NextRequest) {
 
   if (isProtectedPath) {
     if (!sessionToken) {
+      const isRscRequest = request.headers.get('RSC') || request.nextUrl.searchParams.has('_rsc')
       const loginUrl = new URL('/login', request.url)
+      if (isRscRequest) {
+        return NextResponse.json({ error: '未授权' }, { status: 401 })
+      }
       return NextResponse.redirect(loginUrl)
     }
   }
 
   const response = NextResponse.next()
-  
-  const isAllowed = allowedOrigins.some(allowed => {
+
+  const isAllowed = allowedOrigins.some((allowed) => {
     if (allowed === '*') return true
     return origin === allowed
   })
@@ -53,27 +62,33 @@ export function middleware(request: NextRequest) {
   if (isAllowed) {
     response.headers.set('Access-Control-Allow-Origin', origin)
   }
-  
+
   response.headers.set('Access-Control-Allow-Credentials', 'true')
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH')
-  response.headers.set('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Content-Type, Authorization')
-  
+  response.headers.set(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, DELETE, OPTIONS, PATCH'
+  )
+  response.headers.set(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Content-Type, Authorization'
+  )
+
   if (request.method === 'OPTIONS') {
     return new NextResponse(null, {
       status: 200,
       headers: response.headers,
     })
   }
-  
+
   return response
 }
 
 export const config = {
   matcher: [
     '/',
-    '/settings',
-    '/stats',
-    '/login',
+    '/settings/:path*',
+    '/stats/:path*',
+    '/login/:path*',
     '/share/:path*',
     '/api/:path*',
   ],

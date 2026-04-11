@@ -18,20 +18,23 @@ const SheetPortal = DialogPrimitive.Portal
 const SheetOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
-    className={cn(
-      "fixed inset-0 z-50 bg-black/70 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
-    )}
-    {...props}
-    ref={ref}
-  />
-))
+>((props, ref) => {
+  const { className, ...rest } = props ?? {}
+  return (
+    <DialogPrimitive.Overlay
+      className={cn(
+        "fixed inset-0 z-50 bg-black/70 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        className
+      )}
+      {...rest}
+      ref={ref}
+    />
+  )
+})
 SheetOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-white/[0.06] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.6)] transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 border-white/10 relative overflow-hidden backdrop-blur-[24px] saturate-[200%] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/12 before:to-transparent",
+  "fixed z-50 gap-4 bg-[#0c0c1a]/90 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.6)] transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 border-white/10 relative overflow-hidden backdrop-blur-[24px] saturate-[200%] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/12 before:to-transparent",
   {
     variants: {
       side: {
@@ -57,22 +60,25 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => (
-  <SheetPortal>
-    <SheetOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(sheetVariants({ side }), className)}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-[6px] opacity-60 ring-offset-black transition-all hover:opacity-100 hover:text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-white/10 data-[state=open]:text-white/70">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </SheetPortal>
-))
+>((props, ref) => {
+  const { side = "right", className, children, ...rest } = props ?? {}
+  return (
+    <SheetPortal>
+      <SheetOverlay />
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(sheetVariants({ side }), className)}
+        {...rest}
+      >
+        {children}
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-[6px] opacity-60 ring-offset-black transition-all hover:opacity-100 hover:text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-white/10 data-[state=open]:text-white/70">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </SheetPortal>
+  )
+})
 SheetContent.displayName = DialogPrimitive.Content.displayName
 
 const SheetHeader = ({
@@ -106,25 +112,31 @@ SheetFooter.displayName = "SheetFooter"
 const SheetTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn("text-lg font-semibold text-[#f0f0f5]", className)}
-    {...props}
-  />
-))
+>((props, ref) => {
+  const { className, ...rest } = props ?? {}
+  return (
+    <DialogPrimitive.Title
+      ref={ref}
+      className={cn("text-lg font-semibold text-[#f0f0f5]", className)}
+      {...rest}
+    />
+  )
+})
 SheetTitle.displayName = DialogPrimitive.Title.displayName
 
 const SheetDescription = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-white/55", className)}
-    {...props}
-  />
-))
+>((props, ref) => {
+  const { className, ...rest } = props ?? {}
+  return (
+    <DialogPrimitive.Description
+      ref={ref}
+      className={cn("text-sm text-white/55", className)}
+      {...rest}
+    />
+  )
+})
 SheetDescription.displayName = DialogPrimitive.Description.displayName
 
 export {

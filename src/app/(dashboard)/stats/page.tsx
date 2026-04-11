@@ -64,6 +64,9 @@ export default function StatsPage() {
       if (res.ok) {
         const data = await res.json()
         setStats(data)
+      } else if (res.status === 401) {
+        window.location.href = '/login'
+        return
       }
     } catch (error) {
       console.error('获取统计数据失败:', error)
