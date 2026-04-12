@@ -49,7 +49,7 @@ const DialogContent = React.forwardRef<
           transform: 'translate(-50%, -50%)',
         }}
         className={cn(
-          "z-50 w-full max-w-lg border border-white/10 bg-[#0c0c1a]/90 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.6)] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-[14px] relative overflow-hidden backdrop-blur-[24px] saturate-[200%] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/12 before:to-transparent",
+          "z-50 w-full max-w-lg border border-white/10 bg-black p-6 shadow-[0_24px_80px_rgba(0,0,0,0.6)] duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-[14px] relative overflow-x-hidden overflow-y-hidden backdrop-blur-[24px] saturate-[200%] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/12 before:to-transparent",
           className
         )}
         {...rest}
