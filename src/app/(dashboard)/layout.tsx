@@ -11,7 +11,7 @@ export default function DashboardLayout({
   return (
     <CyberBackgroundEffect>
       <Sidebar />
-      <main className="md:ml-16 min-h-screen relative z-10">
+      <main className="md:ml-16 min-h-screen relative z-10 bg-transparent">
         {children}
       </main>
     </CyberBackgroundEffect>

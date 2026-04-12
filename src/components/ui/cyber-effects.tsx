@@ -1,64 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState, ReactNode, useCallback } from 'react'
-import { styled, keyframes, css } from '@/lib/stitches.config'
-
-const curtainSway1 = keyframes({
-  '0%, 100%': {
-    transform: 'skewX(-3deg) translateX(-2%) scaleY(1)',
-    opacity: '0.80',
-  },
-  '25%': {
-    transform: 'skewX(2deg) translateX(1%) scaleY(1.02)',
-    opacity: '0.92',
-  },
-  '50%': {
-    transform: 'skewX(-1deg) translateX(3%) scaleY(0.98)',
-    opacity: '0.72',
-  },
-  '75%': {
-    transform: 'skewX(3deg) translateX(-1%) scaleY(1.01)',
-    opacity: '0.88',
-  },
-})
-
-const curtainSway2 = keyframes({
-  '0%, 100%': {
-    transform: 'skewX(2deg) translateX(1%) scaleY(1.01)',
-    opacity: '0.70',
-  },
-  '35%': {
-    transform: 'skewX(-3deg) translateX(-3%) scaleY(0.97)',
-    opacity: '0.85',
-  },
-  '70%': {
-    transform: 'skewX(1deg) translateX(2%) scaleY(1.03)',
-    opacity: '0.65',
-  },
-})
-
-const curtainSway3 = keyframes({
-  '0%, 100%': {
-    transform: 'skewX(-2deg) translateX(2%) scaleY(1)',
-    opacity: '0.62',
-  },
-  '50%': {
-    transform: 'skewX(4deg) translateX(-2%) scaleY(1.04)',
-    opacity: '0.82',
-  },
-})
-
-const auroraBreathe = keyframes({
-  '0%, 100%': { opacity: '0.65', filter: 'blur(50px) brightness(1)' },
-  '30%': { opacity: '0.88', filter: 'blur(45px) brightness(1.15)' },
-  '50%': { opacity: '1', filter: 'blur(40px) brightness(1.25)' },
-  '70%': { opacity: '0.82', filter: 'blur(46px) brightness(1.08)' },
-})
-
-const dotPulse = keyframes({
-  '0%, 100%': { opacity: '0.25' },
-  '50%': { opacity: '0.5' },
-})
+import { useEffect, useRef, ReactNode, useCallback } from 'react'
+import { styled } from '@/lib/stitches.config'
 
 const StitchBackground = styled('div', {
   position: 'fixed',
@@ -72,59 +15,12 @@ const StitchBackground = styled('div', {
   pointerEvents: 'none',
 })
 
-const AuroraLayer = styled('div', {
+const AuroraCanvas = styled('canvas', {
   position: 'absolute',
-  bottom: '0',
-  left: '-15%',
-  right: '-15%',
-  height: '75%',
+  inset: 0,
+  width: '100%',
+  height: '100%',
   pointerEvents: 'none',
-  animation: `${auroraBreathe} 16s ease-in-out infinite`,
-  willChange: 'opacity, filter',
-})
-
-const AuroraCurtain = styled('div', {
-  position: 'absolute',
-  bottom: '0',
-  willChange: 'transform, opacity',
-  variants: {
-    glow: {
-      blueLeft: {
-        background: 'linear-gradient(to top, rgba(30, 60, 180, 0.92) 0%, rgba(50, 80, 200, 0.75) 15%, rgba(80, 60, 180, 0.55) 35%, rgba(100, 50, 170, 0.30) 55%, rgba(80, 40, 140, 0.12) 75%, transparent 95%)',
-      },
-      purpleCenter: {
-        background: 'linear-gradient(to top, rgba(120, 50, 200, 0.88) 0%, rgba(150, 60, 210, 0.72) 15%, rgba(180, 70, 200, 0.55) 30%, rgba(200, 80, 190, 0.35) 50%, rgba(170, 60, 170, 0.15) 72%, transparent 92%)',
-      },
-      pinkPeak: {
-        background: 'linear-gradient(to top, rgba(200, 60, 180, 0.85) 0%, rgba(230, 80, 170, 0.78) 12%, rgba(250, 100, 160, 0.60) 28%, rgba(240, 120, 180, 0.38) 48%, rgba(200, 100, 180, 0.15) 68%, transparent 90%)',
-      },
-      magentaCyan: {
-        background: 'linear-gradient(to top, rgba(180, 50, 200, 0.80) 0%, rgba(210, 80, 190, 0.65) 12%, rgba(220, 120, 200, 0.48) 25%, rgba(160, 160, 220, 0.42) 40%, rgba(80, 200, 230, 0.55) 55%, rgba(40, 190, 220, 0.30) 72%, transparent 92%)',
-      },
-      cyanBright: {
-        background: 'linear-gradient(to top, rgba(40, 200, 240, 0.90) 0%, rgba(50, 210, 245, 0.78) 12%, rgba(60, 220, 240, 0.58) 28%, rgba(50, 200, 230, 0.35) 48%, rgba(40, 170, 210, 0.15) 70%, transparent 92%)',
-      },
-      cyanRight: {
-        background: 'linear-gradient(to top, rgba(30, 180, 230, 0.82) 0%, rgba(40, 190, 235, 0.65) 15%, rgba(50, 180, 220, 0.45) 32%, rgba(60, 150, 200, 0.25) 52%, rgba(50, 120, 180, 0.10) 72%, transparent 90%)',
-      },
-      blueRight: {
-        background: 'linear-gradient(to top, rgba(40, 80, 200, 0.70) 0%, rgba(50, 100, 210, 0.55) 18%, rgba(60, 90, 190, 0.35) 38%, rgba(50, 70, 160, 0.15) 60%, transparent 88%)',
-      },
-      deepBase: {
-        background: 'linear-gradient(to top, rgba(20, 20, 80, 0.90) 0%, rgba(30, 30, 100, 0.60) 20%, rgba(40, 25, 110, 0.30) 45%, transparent 80%)',
-      },
-    },
-    sway: {
-      s1: {},
-      s2: {},
-      s3: {},
-    },
-  },
-  compoundVariants: [
-    { sway: 's1', css: { animation: `${curtainSway1} 28s ease-in-out infinite` } },
-    { sway: 's2', css: { animation: `${curtainSway2} 35s ease-in-out infinite` } },
-    { sway: 's3', css: { animation: `${curtainSway3} 42s ease-in-out infinite` } },
-  ],
 })
 
 const DotGridCanvas = styled('canvas', {
@@ -135,12 +31,16 @@ const DotGridCanvas = styled('canvas', {
   pointerEvents: 'none',
 })
 
-const VignetteOverlay = styled('div', {
-  position: 'absolute',
-  inset: 0,
-  background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.5) 100%)',
-  pointerEvents: 'none',
-})
+interface AuroraLayer {
+  baseY: number
+  amplitude: number
+  frequency: number
+  speed: number
+  phase: number
+  blur: number
+  opacity: number
+  colors: Array<{ stop: number; r: number; g: number; b: number; alpha: number }>
+}
 
 interface DotParticle {
   x: number
@@ -151,87 +51,176 @@ interface DotParticle {
   vy: number
   size: number
   baseOpacity: number
-  flowOffsetX: number
-  flowOffsetY: number
-  flowSpeedX: number
-  flowSpeedY: number
-  flowAmplitudeX: number
-  flowAmplitudeY: number
-  flowPhaseX: number
-  flowPhaseY: number
 }
 
-function useDotField(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
+function createAuroraLayers(height: number): AuroraLayer[] {
+  const auroraHeight = height * 0.35
+  
+  return [
+    {
+      baseY: height - auroraHeight * 0.3,
+      amplitude: 60,
+      frequency: 0.002,
+      speed: 0.0008,
+      phase: 0,
+      blur: 50,
+      opacity: 0.5,
+      colors: [
+        { stop: 0, r: 120, g: 80, b: 200, alpha: 0.5 },
+        { stop: 0.3, r: 100, g: 100, b: 220, alpha: 0.45 },
+        { stop: 0.6, r: 80, g: 150, b: 220, alpha: 0.4 },
+        { stop: 0.8, r: 60, g: 200, b: 220, alpha: 0.35 },
+        { stop: 1, r: 100, g: 220, b: 220, alpha: 0.3 },
+      ],
+    },
+    {
+      baseY: height - auroraHeight * 0.5,
+      amplitude: 80,
+      frequency: 0.0015,
+      speed: 0.0006,
+      phase: 2,
+      blur: 60,
+      opacity: 0.45,
+      colors: [
+        { stop: 0, r: 100, g: 60, b: 180, alpha: 0.45 },
+        { stop: 0.3, r: 80, g: 100, b: 200, alpha: 0.4 },
+        { stop: 0.6, r: 60, g: 150, b: 200, alpha: 0.35 },
+        { stop: 0.8, r: 50, g: 180, b: 200, alpha: 0.3 },
+        { stop: 1, r: 80, g: 200, b: 200, alpha: 0.25 },
+      ],
+    },
+    {
+      baseY: height - auroraHeight * 0.7,
+      amplitude: 100,
+      frequency: 0.0012,
+      speed: 0.0005,
+      phase: 4,
+      blur: 70,
+      opacity: 0.4,
+      colors: [
+        { stop: 0, r: 80, g: 50, b: 160, alpha: 0.4 },
+        { stop: 0.3, r: 70, g: 90, b: 180, alpha: 0.35 },
+        { stop: 0.6, r: 50, g: 140, b: 180, alpha: 0.3 },
+        { stop: 0.8, r: 40, g: 170, b: 180, alpha: 0.25 },
+        { stop: 1, r: 60, g: 180, b: 180, alpha: 0.2 },
+      ],
+    },
+    {
+      baseY: height - auroraHeight * 0.9,
+      amplitude: 120,
+      frequency: 0.001,
+      speed: 0.0004,
+      phase: 6,
+      blur: 80,
+      opacity: 0.35,
+      colors: [
+        { stop: 0, r: 70, g: 40, b: 140, alpha: 0.35 },
+        { stop: 0.3, r: 60, g: 80, b: 160, alpha: 0.3 },
+        { stop: 0.6, r: 40, g: 130, b: 160, alpha: 0.25 },
+        { stop: 0.8, r: 30, g: 160, b: 160, alpha: 0.2 },
+        { stop: 1, r: 50, g: 170, b: 160, alpha: 0.15 },
+      ],
+    },
+  ]
+}
+
+function createDotGrid(width: number, height: number): DotParticle[] {
+  const gap = 20
+  const cols = Math.ceil(width / gap) + 2
+  const rows = Math.ceil(height / gap) + 2
+  const particles: DotParticle[] = []
+
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      const x = i * gap
+      const y = j * gap
+      particles.push({
+        x,
+        y,
+        baseX: x,
+        baseY: y,
+        vx: 0,
+        vy: 0,
+        size: 1.2,
+        baseOpacity: 0.2,
+      })
+    }
+  }
+  return particles
+}
+
+function useAuroraEffect(
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  dotCanvasRef: React.RefObject<HTMLCanvasElement | null>
+) {
+  const layersRef = useRef<AuroraLayer[]>([])
   const particlesRef = useRef<DotParticle[]>([])
-  const mouseRef = useRef({ x: -9999, y: -9999 })
   const animFrameRef = useRef<number>(0)
+  const startTimeRef = useRef<number>(0)
+  const mouseRef = useRef({ x: -9999, y: -9999 })
   const initialized = useRef(false)
 
-  const initParticles = useCallback((width: number, height: number) => {
-    const gap = 28
-    const cols = Math.ceil(width / gap) + 2
-    const rows = Math.ceil(height / gap) + 2
-    const particles: DotParticle[] = []
-
-    for (let i = 0; i < cols; i++) {
-      for (let j = 0; j < rows; j++) {
-        const x = i * gap + ((j % 2) * (gap / 2))
-        const y = j * gap
-        particles.push({
-          x,
-          y,
-          baseX: x,
-          baseY: y,
-          vx: 0,
-          vy: 0,
-          size: Math.random() * 1.2 + 0.6,
-          baseOpacity: Math.random() * 0.25 + 0.15,
-          flowOffsetX: 0,
-          flowOffsetY: 0,
-          flowSpeedX: 0.0003 + Math.random() * 0.0004,
-          flowSpeedY: 0.00025 + Math.random() * 0.00035,
-          flowAmplitudeX: 4 + Math.random() * 6,
-          flowAmplitudeY: 3 + Math.random() * 5,
-          flowPhaseX: Math.random() * Math.PI * 2,
-          flowPhaseY: Math.random() * Math.PI * 2,
-        })
-      }
-    }
-    particlesRef.current = particles
+  const init = useCallback((width: number, height: number) => {
+    layersRef.current = createAuroraLayers(height)
+    particlesRef.current = createDotGrid(width, height)
+    startTimeRef.current = performance.now()
+    initialized.current = true
   }, [])
+
+  const calculateWaveY = useCallback(
+    (x: number, layer: AuroraLayer, time: number): number => {
+      const wave1 = Math.sin(x * layer.frequency + time * layer.speed + layer.phase) * layer.amplitude
+      const wave2 = Math.sin(x * layer.frequency * 1.5 + time * layer.speed * 0.8 + layer.phase * 1.5) * (layer.amplitude * 0.5)
+      const wave3 = Math.sin(x * layer.frequency * 2.5 + time * layer.speed * 1.2 + layer.phase * 2) * (layer.amplitude * 0.3)
+      
+      const noise = Math.sin(x * 0.01 + time * 0.0003) * 20 + Math.cos(x * 0.005 - time * 0.0002) * 15
+      
+      return layer.baseY + wave1 + wave2 + wave3 + noise
+    },
+    []
+  )
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    const dotCanvas = dotCanvasRef.current
+    
+    if (!canvas || !dotCanvas) return
 
     let width = window.innerWidth
     let height = window.innerHeight
 
-    canvas.width = width * window.devicePixelRatio
-    canvas.height = height * window.devicePixelRatio
-    canvas.style.width = `${width}px`
-    canvas.style.height = `${height}px`
+    const setupCanvas = (c: HTMLCanvasElement) => {
+      c.width = width * window.devicePixelRatio
+      c.height = height * window.devicePixelRatio
+      c.style.width = `${width}px`
+      c.style.height = `${height}px`
+    }
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    setupCanvas(canvas)
+    setupCanvas(dotCanvas)
 
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    const auroraCtx = canvas.getContext('2d')
+    const dotCtx = dotCanvas.getContext('2d')
+    
+    if (!auroraCtx || !dotCtx) return
+
+    auroraCtx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    dotCtx.scale(window.devicePixelRatio, window.devicePixelRatio)
 
     if (!initialized.current) {
-      initParticles(width, height)
-      initialized.current = true
+      init(width, height)
     }
 
     const handleResize = () => {
       width = window.innerWidth
       height = window.innerHeight
-      canvas.width = width * window.devicePixelRatio
-      canvas.height = height * window.devicePixelRatio
-      canvas.style.width = `${width}px`
-      canvas.style.height = `${height}px`
-      ctx.setTransform(1, 0, 0, 1, 0, 0)
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
-      initParticles(width, height)
+      setupCanvas(canvas)
+      setupCanvas(dotCanvas)
+      auroraCtx.setTransform(1, 0, 0, 1, 0, 0)
+      auroraCtx.scale(window.devicePixelRatio, window.devicePixelRatio)
+      dotCtx.setTransform(1, 0, 0, 1, 0, 0)
+      dotCtx.scale(window.devicePixelRatio, window.devicePixelRatio)
+      init(width, height)
     }
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -246,28 +235,69 @@ function useDotField(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('mouseleave', handleMouseLeave)
 
-    const INFLUENCE_RADIUS = 160
-    const REPULSION_STRENGTH = 4.5
-    const RETURN_SPEED = 0.06
-    const FRICTION = 0.88
-
-    let startTime = performance.now()
+    const CYCLE_DURATION = 10000
+    const FADE_IN_DURATION = 1500
+    const FADE_OUT_START = 8000
+    const FADE_OUT_DURATION = 2000
+    const BASE_OPACITY = 0.8
 
     function animate() {
-      if (!ctx) return
-      ctx.clearRect(0, 0, width, height)
+      if (!auroraCtx || !dotCtx) return
 
+      const currentTime = performance.now() - startTimeRef.current
+      const cycleTime = currentTime % CYCLE_DURATION
+      
+      let globalOpacity = BASE_OPACITY
+      
+      if (cycleTime < FADE_IN_DURATION) {
+        const fadeInProgress = cycleTime / FADE_IN_DURATION
+        globalOpacity = BASE_OPACITY * fadeInProgress
+      } else if (cycleTime > FADE_OUT_START) {
+        const fadeOutProgress = (cycleTime - FADE_OUT_START) / FADE_OUT_DURATION
+        globalOpacity = BASE_OPACITY * (1 - Math.min(fadeOutProgress, 1))
+      }
+
+      auroraCtx.clearRect(0, 0, width, height)
+      auroraCtx.globalCompositeOperation = 'screen'
+
+      layersRef.current.forEach((layer) => {
+        const gradient = auroraCtx.createLinearGradient(0, layer.baseY - layer.amplitude * 2, 0, layer.baseY + layer.amplitude * 2)
+        
+        layer.colors.forEach((color) => {
+          gradient.addColorStop(color.stop, `rgba(${color.r}, ${color.g}, ${color.b}, ${color.alpha * globalOpacity})`)
+        })
+
+        auroraCtx.save()
+        auroraCtx.filter = `blur(${layer.blur}px)`
+        auroraCtx.fillStyle = gradient
+
+        auroraCtx.beginPath()
+        auroraCtx.moveTo(0, height)
+
+        const step = 10
+        for (let x = 0; x <= width; x += step) {
+          const y = calculateWaveY(x, layer, currentTime)
+          auroraCtx.lineTo(x, y)
+        }
+
+        auroraCtx.lineTo(width, height)
+        auroraCtx.closePath()
+        auroraCtx.fill()
+        auroraCtx.restore()
+      })
+
+      auroraCtx.globalCompositeOperation = 'source-over'
+
+      dotCtx.clearRect(0, 0, width, height)
+      
       const mx = mouseRef.current.x
       const my = mouseRef.current.y
-      const elapsed = performance.now() - startTime
+      const INFLUENCE_RADIUS = 80
+      const REPULSION_STRENGTH = 0.8
+      const RETURN_SPEED = 0.008
+      const FRICTION = 0.94
 
       for (const p of particlesRef.current) {
-        p.flowOffsetX = Math.sin(elapsed * p.flowSpeedX + p.flowPhaseX) * p.flowAmplitudeX
-        p.flowOffsetY = Math.cos(elapsed * p.flowSpeedY + p.flowPhaseY) * p.flowAmplitudeY + Math.sin(elapsed * p.flowSpeedX * 0.7 + p.flowPhaseY) * (p.flowAmplitudeY * 0.5)
-
-        const targetX = p.baseX + p.flowOffsetX
-        const targetY = p.baseY + p.flowOffsetY
-
         const dx = p.x - mx
         const dy = p.y - my
         const distSq = dx * dx + dy * dy
@@ -282,8 +312,8 @@ function useDotField(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
           p.vy += ny * power
         }
 
-        const returnDx = targetX - p.x
-        const returnDy = targetY - p.y
+        const returnDx = p.baseX - p.x
+        const returnDy = p.baseY - p.y
         p.vx += returnDx * RETURN_SPEED
         p.vy += returnDy * RETURN_SPEED
 
@@ -293,16 +323,10 @@ function useDotField(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
         p.x += p.vx
         p.y += p.vy
 
-        const displacement = Math.sqrt(
-          (p.x - targetX) ** 2 + (p.y - targetY) ** 2
-        )
-        const dispFactor = Math.min(displacement / 40, 1)
-        const opacity = p.baseOpacity + dispFactor * 0.35
-
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`
-        ctx.fill()
+        dotCtx.beginPath()
+        dotCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        dotCtx.fillStyle = `rgba(255, 255, 255, ${p.baseOpacity * globalOpacity})`
+        dotCtx.fill()
       }
 
       animFrameRef.current = requestAnimationFrame(animate)
@@ -316,7 +340,7 @@ function useDotField(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseleave', handleMouseLeave)
     }
-  }, [initParticles])
+  }, [init, calculateWaveY])
 
   return null
 }
@@ -327,98 +351,15 @@ interface StitchBackgroundProps {
 
 export function CyberBackgroundEffect({ children }: StitchBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const dotCanvasRef = useRef<HTMLCanvasElement>(null)
 
-  useDotField(canvasRef)
+  useAuroraEffect(canvasRef, dotCanvasRef)
 
   return (
     <>
       <StitchBackground>
-        <AuroraLayer>
-          <AuroraCurtain
-            glow="deepBase"
-            sway="s3"
-            css={{
-              width: '130%',
-              height: '100%',
-              left: '-15%',
-              animationDelay: '0s',
-            }}
-          />
-          <AuroraCurtain
-            glow="blueLeft"
-            sway="s1"
-            css={{
-              width: '28%',
-              height: '95%',
-              left: '-5%',
-              animationDelay: '-3s',
-            }}
-          />
-          <AuroraCurtain
-            glow="purpleCenter"
-            sway="s2"
-            css={{
-              width: '25%',
-              height: '90%',
-              left: '18%',
-              animationDelay: '-10s',
-            }}
-          />
-          <AuroraCurtain
-            glow="pinkPeak"
-            sway="s1"
-            css={{
-              width: '22%',
-              height: '85%',
-              left: '38%',
-              animationDelay: '-18s',
-            }}
-          />
-          <AuroraCurtain
-            glow="magentaCyan"
-            sway="s3"
-            css={{
-              width: '26%',
-              height: '92%',
-              left: '52%',
-              animationDelay: '-25s',
-            }}
-          />
-          <AuroraCurtain
-            glow="cyanBright"
-            sway="s2"
-            css={{
-              width: '24%',
-              height: '88%',
-              left: '68%',
-              animationDelay: '-8s',
-            }}
-          />
-          <AuroraCurtain
-            glow="cyanRight"
-            sway="s1"
-            css={{
-              width: '20%',
-              height: '82%',
-              left: '82%',
-              animationDelay: '-15s',
-            }}
-          />
-          <AuroraCurtain
-            glow="blueRight"
-            sway="s3"
-            css={{
-              width: '18%',
-              height: '78%',
-              left: '92%',
-              animationDelay: '-30s',
-            }}
-          />
-        </AuroraLayer>
-
-        <DotGridCanvas ref={canvasRef} />
-
-        <VignetteOverlay />
+        <AuroraCanvas ref={canvasRef} />
+        <DotGridCanvas ref={dotCanvasRef} />
       </StitchBackground>
       {children}
     </>

@@ -32,25 +32,25 @@ const columnStyles: Record<TaskStatus, {
     border: 'data-[isover=true]:border-[#4f8fff]/30 data-[isover=true]:shadow-[0_0_30px_rgba(79,143,255,0.08)]',
     indicator: 'bg-[#4f8fff]',
     headerBg: 'from-[#4f8fff]/8 to-transparent',
-    glassTint: 'from-[#4f8fff]/[0.06] via-white/[0.04] to-white/[0.02]',
+    glassTint: '',
   },
   in_progress: {
     border: 'data-[isover=true]:border-[#a855f7]/30 data-[isover=true]:shadow-[0_0_30px_rgba(168,85,247,0.08)]',
     indicator: 'bg-[#a855f7]',
     headerBg: 'from-[#a855f7]/8 to-transparent',
-    glassTint: 'from-[#a855f7]/[0.06] via-white/[0.04] to-white/[0.02]',
+    glassTint: '',
   },
   in_review: {
     border: 'data-[isover=true]:border-[#f59e0b]/30 data-[isover=true]:shadow-[0_0_30px_rgba(245,158,11,0.08)]',
     indicator: 'bg-[#f59e0b]',
     headerBg: 'from-[#f59e0b]/8 to-transparent',
-    glassTint: 'from-[#f59e0b]/[0.06] via-white/[0.04] to-white/[0.02]',
+    glassTint: '',
   },
   done: {
     border: 'data-[isover=true]:border-[#22d3ee]/30 data-[isover=true]:shadow-[0_0_30px_rgba(34,211,238,0.08)]',
     indicator: 'bg-[#22d3ee]',
     headerBg: 'from-[#22d3ee]/8 to-transparent',
-    glassTint: 'from-[#22d3ee]/[0.06] via-white/[0.04] to-white/[0.02]',
+    glassTint: '',
   },
 }
 
@@ -81,6 +81,7 @@ export function Column({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    backgroundColor: 'transparent',
   }
 
   const columnStyle = columnStyles[status]
@@ -92,16 +93,15 @@ export function Column({
       data-isover={isOver}
       className={cn(
         'flex-shrink-0 w-72 md:w-80 rounded-[14px] flex flex-col max-h-full border transition-all duration-300',
-        'bg-gradient-to-b backdrop-blur-[16px] backdrop-saturate-[1.4]',
-        'border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.06)]',
+        'backdrop-blur-[8px] backdrop-saturate-[1.3]',
+        'bg-white/[0.03] border-white/[0.06]',
         columnStyle.glassTint,
         columnStyle.border,
-        isOver && 'ring-2 ring-white/12 ring-offset-2 ring-offset-black'
+        isOver && 'ring-2 ring-white/10 ring-offset-2 ring-offset-black'
       )}
     >
       <div className={cn(
         'p-3.5 border-b border-white/[0.06] relative overflow-hidden',
-        'before:absolute before:inset-0 before:bg-gradient-to-r before:opacity-100',
         columnStyle.headerBg
       )}>
         <div className="flex items-center justify-between relative z-10">

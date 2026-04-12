@@ -131,7 +131,7 @@ export default function SharePage() {
 
   return (
     <CyberBackgroundEffect>
-      <div className="min-h-screen relative z-10">
+      <div className="min-h-screen relative z-10 bg-transparent">
         <header className="bg-black/60 backdrop-blur-[30px] border-b border-white/[0.05] px-4 py-3 relative z-10">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-xl font-semibold text-white/90 tracking-tight">

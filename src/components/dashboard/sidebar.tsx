@@ -44,13 +44,14 @@ export function Sidebar() {
   }
 
   return (
-    <>
-      <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-[10px] border border-white/10 bg-white/[0.06] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.1] transition-all duration-300"
-        onClick={() => setMobileOpen(!mobileOpen)}
-      >
-        {mobileOpen ? <X className="h-5 w-5 text-white/80" /> : <Menu className="h-5 w-5 text-white/80" />}
-      </button>
+    <TooltipProvider delayDuration={300}>
+      <>
+        <button
+          className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-[10px] border border-white/10 bg-white/[0.06] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.1] transition-all duration-300"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
+          {mobileOpen ? <X className="h-5 w-5 text-white/80" /> : <Menu className="h-5 w-5 text-white/80" />}
+        </button>
 
       <aside
         className={cn(
@@ -62,7 +63,7 @@ export function Sidebar() {
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
       >
-        <div className="flex flex-col items-center space-y-6 flex-1 w-full">
+        <div className="flex flex-col items-center space-y-6 flex-1 w-full px-1">
           <Link href="/" className="flex items-center justify-center group">
             <div className={cn(
               'w-10 h-10 rounded-[12px] flex items-center justify-center transition-all duration-500',
@@ -102,48 +103,101 @@ export function Sidebar() {
             })}
           </nav>
 
-          <div className="w-full px-2 mt-4">
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
+          <div className="w-full px-3 mt-4">
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent shadow-[0_0_10px_rgba(255,255,255,0.15)]" />
           </div>
 
-          <div className="w-full px-2 flex-1 overflow-hidden flex flex-col">
-            <button
-              onClick={() => setNewProjectOpen(true)}
-              className="w-10 h-10 flex items-center justify-center rounded-[10px] transition-all duration-300 text-white/35 hover:text-white/75 hover:bg-white/[0.06] hover:border hover:border-white/[0.1]"
-              title="新建项目"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
+          <div className="w-full px-2 flex-1 overflow-visible flex flex-col">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setNewProjectOpen(true)}
+                  className={cn(
+                    'group relative w-full mx-0 mb-3 p-2 rounded-[14px] transition-all duration-500',
+                    'bg-gradient-to-br from-white/10 via-white/5 to-transparent',
+                    'border border-white/20',
+                    'hover:border-white/40',
+                    'hover:shadow-[0_8px_32px_rgba(255,255,255,0.15),0_0_20px_rgba(255,255,255,0.1)_inset]',
+                    'hover:-translate-y-1',
+                    'active:translate-y-0 active:scale-[0.98]',
+                    'overflow-visible',
+                    'backdrop-blur-xl'
+                  )}
+                >
+                  <div className={cn(
+                    'absolute inset-0 rounded-[14px] opacity-0 transition-all duration-500',
+                    'group-hover:opacity-100',
+                    'bg-gradient-to-tr from-white/15 via-transparent to-white/10'
+                  )} />
+                  
+                  <div className={cn(
+                    'absolute inset-0 rounded-[14px] overflow-visible opacity-0 group-hover:opacity-100 transition-opacity duration-700'
+                  )}>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-spin-slow" />
+                  </div>
+                  
+                  <div className={cn(
+                    'absolute inset-0 rounded-[14px] animate-pulse-slow',
+                    'bg-gradient-to-br from-white/8 to-transparent'
+                  )} />
+                  
+                  <div className="relative z-10 flex items-center justify-center gap-2">
+                    <div className={cn(
+                      'w-8 h-8 rounded-[10px] flex items-center justify-center transition-all duration-500',
+                      'bg-gradient-to-br from-white/15 to-white/5',
+                      'border border-white/25',
+                      'group-hover:border-white/50',
+                      'group-hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]',
+                      'group-hover:scale-110 group-hover:rotate-90'
+                    )}>
+                      <Plus className={cn(
+                        'h-4 w-4 transition-all duration-500',
+                        'text-white/70',
+                        'group-hover:text-white',
+                        'group-hover:scale-110',
+                        'drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
+                      )} />
+                    </div>
+                  </div>
+                  
+                  <div className={cn(
+                    'absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full',
+                    'bg-white/20 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500'
+                  )} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-black/90 border-white/10 text-white/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                <p>新建项目</p>
+              </TooltipContent>
+            </Tooltip>
 
             <ScrollArea className="flex-1">
-              <TooltipProvider delayDuration={300}>
-                <div className="flex flex-col items-center space-y-1 pb-2">
-                  {loading ? (
-                    <div className="w-8 h-8 rounded-[8px] bg-white/[0.04] animate-pulse border border-white/[0.06]" />
-                  ) : (
-                    projects.map((project) => (
-                      <Tooltip key={project._id}>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={() => setCurrentProject(project)}
-                            className={cn(
-                              'w-10 h-10 flex items-center justify-center rounded-[10px] transition-all duration-300 text-sm font-medium',
-                              currentProject?._id === project._id
-                                ? 'bg-white/[0.1] text-white border border-white/[0.15] shadow-[0_4px_12px_rgba(255,255,255,0.04)]'
-                                : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border border-transparent hover:border-white/[0.08]'
-                            )}
-                          >
-                            {project.name.charAt(0).toUpperCase()}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="bg-black/80 border-white/10 text-white/80 backdrop-blur-xl">
-                          <p>{project.name}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    ))
-                  )}
-                </div>
-              </TooltipProvider>
+              <div className="flex flex-col items-center space-y-1 pb-2">
+                {loading ? (
+                  <div className="w-8 h-8 rounded-[8px] bg-white/[0.04] animate-pulse border border-white/[0.06]" />
+                ) : (
+                  projects.map((project) => (
+                    <Tooltip key={project._id}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setCurrentProject(project)}
+                          className={cn(
+                            'w-10 h-10 flex items-center justify-center rounded-[10px] transition-all duration-300 text-sm font-medium',
+                            currentProject?._id === project._id
+                              ? 'bg-white/[0.1] text-white border border-white/[0.15] shadow-[0_4px_12px_rgba(255,255,255,0.04)]'
+                              : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border border-transparent hover:border-white/[0.08]'
+                          )}
+                        >
+                          {project.name.charAt(0).toUpperCase()}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-black/80 border-white/10 text-white/80 backdrop-blur-xl">
+                        <p>{project.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))
+                )}
+              </div>
             </ScrollArea>
           </div>
         </div>
@@ -186,6 +240,7 @@ export function Sidebar() {
           onClick={() => setMobileOpen(false)}
         />
       )}
-    </>
+      </>
+    </TooltipProvider>
   )
 }

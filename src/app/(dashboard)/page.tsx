@@ -336,7 +336,7 @@ export default function KanbanPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen relative">
+    <div className="flex flex-col h-screen relative z-10 bg-transparent">
       {isDemo && (
         <div className="bg-warning/10 border-b border-warning/30 px-4 py-2 text-center text-sm text-warning backdrop-blur-sm">
           演示模式 - 数据仅保存在内存中，刷新后重置。请创建项目以使用完整功能。
@@ -350,7 +350,7 @@ export default function KanbanPage() {
         onOpenAI={handleOpenAI}
       />
       
-      <div className="flex-1 p-4 overflow-hidden">
+      <div className="flex-1 p-4 overflow-hidden bg-transparent">
         <KanbanBoard
           tasks={filteredTasks}
           onTaskStatusChange={handleTaskStatusChange}

@@ -84,13 +84,13 @@ export function TaskCard({ task, onClick, onDelete, isDragging, readOnly, dragPo
       role="article"
       tabIndex={undefined}
       className={cn(
-        'group rounded-[12px] border border-white/8 p-3.5 transition-all duration-300 relative overflow-hidden',
-        'bg-white/[0.03] backdrop-blur-xl',
-        'hover:bg-white/[0.06] hover:border-white/14',
+        'group rounded-[12px] border border-white/12 p-3.5 transition-all duration-300 relative overflow-hidden',
+        'bg-[#111118]',
+        'hover:bg-[#181822] hover:border-white/18',
         'shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)]',
         'border-l-2',
         statusStyle.border,
-        isDragging && 'shadow-[0_20px_60px_rgba(0,0,0,0.5)] scale-[1.02] opacity-95 bg-white/[0.06] backdrop-blur-2xl',
+        isDragging && 'shadow-[0_20px_60px_rgba(0,0,0,0.5)] scale-[1.02] bg-[#181822]',
         readOnly && 'cursor-default'
       )}
     >
