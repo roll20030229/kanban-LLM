@@ -204,3 +204,29 @@ body {
 .animate-shimmer {
   animation: shimmer 1.5s ease-in-out infinite;
 }
+
+@keyframes sidebar-collapse {
+  from {
+    width: 80px;
+  }
+  to {
+    width: 52px;
+  }
+}
+
+@keyframes sidebar-expand {
+  from {
+    width: 52px;
+  }
+  to {
+    width: 80px;
+  }
+}
+
+.animate-collapse {
+  animation: sidebar-collapse 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-expand {
+  animation: sidebar-expand 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}

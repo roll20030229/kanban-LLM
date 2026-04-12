@@ -34,7 +34,7 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-[#0c0c1a]/90 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.6)] transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 border-white/10 relative overflow-hidden backdrop-blur-[24px] saturate-[200%] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/12 before:to-transparent",
+  "fixed z-50 gap-4 bg-[#0c0c1a]/90 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.6)] transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 border-white/10 relative overflow-x-hidden overflow-y-hidden backdrop-blur-[24px] saturate-[200%] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/12 before:to-transparent",
   {
     variants: {
       side: {

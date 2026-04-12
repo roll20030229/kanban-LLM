@@ -296,6 +296,7 @@ function useAuroraEffect(
       const REPULSION_STRENGTH = 0.8
       const RETURN_SPEED = 0.008
       const FRICTION = 0.94
+      const DOT_BASE_OPACITY = 0.25
 
       for (const p of particlesRef.current) {
         const dx = p.x - mx
@@ -325,7 +326,7 @@ function useAuroraEffect(
 
         dotCtx.beginPath()
         dotCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        dotCtx.fillStyle = `rgba(255, 255, 255, ${p.baseOpacity * globalOpacity})`
+        dotCtx.fillStyle = `rgba(255, 255, 255, ${DOT_BASE_OPACITY})`
         dotCtx.fill()
       }
 

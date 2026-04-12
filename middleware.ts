@@ -43,12 +43,7 @@ export function middleware(request: NextRequest) {
 
   if (isProtectedPath) {
     if (!sessionToken) {
-      const isRscRequest = request.headers.get('RSC') || request.nextUrl.searchParams.has('_rsc')
-      const loginUrl = new URL('/login', request.url)
-      if (isRscRequest) {
-        return NextResponse.json({ error: '未授权' }, { status: 401 })
-      }
-      return NextResponse.redirect(loginUrl)
+      return NextResponse.redirect(new URL('/login', request.url))
     }
   }
 
