@@ -9,7 +9,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   
   return (
     <main 
-      className="min-h-screen relative z-10 bg-transparent pl-2 transition-all duration-500"
+      className="min-h-screen relative z-10 bg-transparent pl-2 pt-14 transition-all duration-500"
       style={{ 
         marginLeft: collapsed ? '52px' : '80px',
         transitionTimingFunction: 'cubic-bezier(0.4,0,0.2,1)'

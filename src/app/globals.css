@@ -34,6 +34,26 @@
   
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.10);
+
+  /* 极光晶体卡片专用变量 - 亮黑设计 */
+  --crystal-outer-bg: #0a0a0a;
+  --crystal-outer-border: rgba(255, 255, 255, 0.10);
+  --crystal-inner-bg: linear-gradient(135deg, #0f0f0f 0%, #080808 100%);
+  --crystal-inner-border: transparent;
+  --crystal-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --crystal-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --crystal-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
+  
+  /* 状态渐变 */
+  --gradient-todo: linear-gradient(135deg, #4f8fff 0%, #22d3ee 100%);
+  --gradient-in-progress: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  --gradient-in-review: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  --gradient-done: linear-gradient(135deg, #22d3ee 0%, #10b981 100%);
+  
+  /* 悬浮阴影 */
+  --suspension-shadow-1: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --suspension-shadow-2: 0 6px 16px rgba(0, 0, 0, 0.2);
+  --suspension-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 * {
@@ -229,4 +249,190 @@ body {
 
 .animate-expand {
   animation: sidebar-expand 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* 超椭圆圆角 */
+@layer utilities {
+  .super-ellipse {
+    border-radius: 16px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
+  
+  .super-ellipse-sm {
+    border-radius: 12px;
+  }
+  
+  .super-ellipse-lg {
+    border-radius: 20px;
+  }
+}
+
+/* 脉冲光点动画 */
+@keyframes dot-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.15);
+  }
+}
+
+.animate-dot-pulse {
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+
+.animate-dot-pulse-delay-1 {
+  animation: dot-pulse 2s ease-in-out 0.2s infinite;
+}
+
+.animate-dot-pulse-delay-2 {
+  animation: dot-pulse 2s ease-in-out 0.4s infinite;
+}
+
+/* 悬浮效果 */
+@keyframes suspension-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.animate-suspension {
+  box-shadow: var(--suspension-shadow-1);
+  transition: all 0.25s ease-out;
+}
+
+.animate-suspension:hover {
+  box-shadow: var(--suspension-shadow-hover);
+  transform: translateY(-2px);
+}
+
+/* 晶体玻璃效果 - 亮黑设计 */
+@layer utilities {
+  .crystal-outer {
+    background: var(--crystal-outer-bg);
+    border: 1px solid var(--crystal-outer-border);
+    box-shadow: 
+      var(--crystal-highlight),
+      var(--crystal-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .crystal-outer:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 
+      var(--crystal-highlight),
+      var(--crystal-shadow-hover);
+    transform: translateY(-2px);
+  }
+  
+  .crystal-inner {
+    background: var(--crystal-inner-bg);
+    border: 1px solid var(--crystal-inner-border);
+    transition: background 0.3s ease;
+  }
+  
+  .crystal-inner:hover {
+    background: linear-gradient(135deg, #141414 0%, #0a0a0a 100%);
+  }
+}
+
+/* 状态渐变光晕 */
+.status-glow-todo {
+  background: linear-gradient(135deg, rgba(79, 143, 255, 0.08) 0%, rgba(34, 211, 238, 0.05) 100%);
+}
+
+.status-glow-in_progress {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(236, 72, 153, 0.05) 100%);
+}
+
+.status-glow-in_review {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(251, 191, 36, 0.05) 100%);
+}
+
+.status-glow-done {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.08) 0%, rgba(16, 185, 129, 0.05) 100%);
+}
+
+/* 悬停展开动画 */
+@keyframes expand-content {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 200px;
+    opacity: 1;
+  }
+}
+
+@keyframes collapse-content {
+  from {
+    max-height: 200px;
+    opacity: 1;
+  }
+  to {
+    max-height: 0;
+    opacity: 0;
+  }
+}
+
+.expand-content {
+  animation: expand-content 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.collapse-content {
+  animation: collapse-content 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* 平滑高度过渡 */
+.smooth-height {
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 性能优化：亮黑设计无需额外处理 */
+@media (prefers-reduced-performance: no-preference) {
+  .crystal-outer {
+    box-shadow: 
+      var(--crystal-highlight),
+      var(--crystal-shadow);
+  }
+  
+  .crystal-inner {
+    background: var(--crystal-inner-bg);
+  }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .animate-suspension:hover {
+    transform: none;
+  }
+  
+  .group:hover .crystal-outer {
+    transform: none;
+  }
+  
+  .group:hover .crystal-inner {
+    background: linear-gradient(135deg, #0f0f0f 0%, #080808 100%);
+  }
+}
+
+/* 动画性能优化 */
+.will-animate {
+  will-change: transform, opacity, max-height;
+}
+
+/* GPU 加速 */
+.gpu-accel {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }

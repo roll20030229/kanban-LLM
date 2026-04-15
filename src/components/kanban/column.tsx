@@ -80,7 +80,7 @@ export function Column({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: 'transform 300ms cubic-bezier(0.2, 0, 0, 1)',
     backgroundColor: 'transparent',
   }
 
@@ -92,7 +92,7 @@ export function Column({
       style={style}
       data-isover={isOver}
       className={cn(
-        'flex-shrink-0 w-72 md:w-80 rounded-[14px] flex flex-col max-h-full border transition-all duration-300',
+        'flex-shrink-0 w-72 md:w-80 rounded-[14px] flex flex-col max-h-full border',
         'backdrop-blur-[8px] backdrop-saturate-[1.3]',
         'bg-white/[0.03] border-white/[0.06]',
         columnStyle.glassTint,

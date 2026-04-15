@@ -51,10 +51,10 @@ export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI }:
       />
       
       <header className={cn(
-        'h-14 flex items-center justify-between px-6 relative overflow-hidden',
+        'fixed top-0 left-0 right-0 h-14 flex items-center justify-between px-6',
         'bg-white/[0.02] backdrop-blur-[30px]',
         'border-b border-white/[0.06]',
-        'after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-white/[0.08] after:to-transparent'
+        'z-[100]'
       )}>
         <div className="flex items-center gap-4 flex-1">
           <div className="flex flex-col gap-1">
@@ -80,7 +80,7 @@ export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI }:
           </div>
         </div>
 
-      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
         <div className="relative hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
           <Input

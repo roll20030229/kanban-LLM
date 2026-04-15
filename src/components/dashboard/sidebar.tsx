@@ -71,7 +71,7 @@ export function Sidebar() {
     <TooltipProvider delayDuration={300}>
       <>
         <button
-          className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-[10px] border border-white/10 bg-white/[0.06] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.1] transition-all duration-300"
+          className="md:hidden fixed top-4 left-4 z-[120] p-2 rounded-[10px] border border-white/10 bg-white/[0.06] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.1] transition-all duration-300"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
           {mobileOpen ? <X className="h-5 w-5 text-white/80" /> : <Menu className="h-5 w-5 text-white/80" />}
@@ -79,13 +79,16 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex flex-col py-4 transition-all duration-500',
+          'fixed inset-y-0 left-0 z-[110] flex flex-col py-4 transition-all duration-500',
           collapsed ? 'w-[52px] bg-transparent backdrop-blur-none border-none shadow-none' : 'w-20 bg-black/60 backdrop-blur-[30px]',
           'border-r border-white/[0.06]',
           'shadow-[4px_0_24px_rgba(0,0,0,0.2)]',
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
-        style={{ transitionTimingFunction: 'cubic-bezier(0.4,0,0.2,1)' }}
+        style={{ 
+          transitionTimingFunction: 'cubic-bezier(0.4,0,0.2,1)',
+          isolation: 'isolate'
+        }}
       >
         <div className="flex flex-col items-center flex-1 w-full px-2">
           <div className={cn(
@@ -332,7 +335,7 @@ export function Sidebar() {
 
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 md:hidden"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[105] md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
