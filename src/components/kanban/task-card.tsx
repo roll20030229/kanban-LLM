@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 
 interface TaskCardProps {
   task: Task
@@ -60,7 +60,7 @@ const priorityStyles: Record<string, { bg: string; border: string; text: string;
   },
 }
 
-export function TaskCard({ task, onClick, onDelete, isDragging, readOnly, dragPosition }: TaskCardProps) {
+export const TaskCard = memo(function TaskCard({ task, onClick, onDelete, isDragging, readOnly, dragPosition }: TaskCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
@@ -83,17 +83,11 @@ export function TaskCard({ task, onClick, onDelete, isDragging, readOnly, dragPo
       task,
     },
     disabled: readOnly,
-    animation: {
-      duration: 150,
-      easing: 'cubic-bezier(0.2, 0, 0, 1)',
-    },
   })
 
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: isDragging 
-      ? 'transform 50ms cubic-bezier(0.2, 0, 0, 1)' 
-      : 'transform 300ms cubic-bezier(0.2, 0, 0, 1)',
+    transform: CSS.Translate.toString(transform),
+    transition: transition || 'transform 200ms cubic-bezier(0.2, 0, 0, 1)',
   }
 
   const statusGradient = statusGradients[task.status]
@@ -108,6 +102,10 @@ export function TaskCard({ task, onClick, onDelete, isDragging, readOnly, dragPo
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()
     onDelete?.()
+  }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation()
   }
 
   const handleMouseEnter = () => {
@@ -128,13 +126,16 @@ export function TaskCard({ task, onClick, onDelete, isDragging, readOnly, dragPo
     <div
       ref={setNodeRef}
       style={style}
+      {...attributes}
+      {...listeners}
       role="article"
       className={cn(
         'group relative rounded-[16px] p-[1px]',
         'crystal-outer',
         statusGradient,
         isDragging && 'shadow-[0_20px_60px_rgba(0,0,0,0.5)] scale-[1.025]',
-        readOnly && 'cursor-default'
+        readOnly && 'cursor-default',
+        !readOnly && 'cursor-grab active:cursor-grabbing'
       )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -157,7 +158,6 @@ export function TaskCard({ task, onClick, onDelete, isDragging, readOnly, dragPo
         <div className="flex items-start gap-3">
           {!readOnly && (
             <div 
-              {...listeners}
               className="flex-shrink-0 mt-1 opacity-30 group-hover:opacity-70 transition-all cursor-grab active:cursor-grabbing hover:scale-110 hover:text-white/90"
             >
               <GripVertical className="h-4 w-4 text-white/50" />
@@ -309,4 +309,4 @@ export function TaskCard({ task, onClick, onDelete, isDragging, readOnly, dragPo
       </div>
     </div>
   )
-}
+})

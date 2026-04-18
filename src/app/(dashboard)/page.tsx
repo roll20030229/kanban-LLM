@@ -173,10 +173,9 @@ export default function KanbanPage() {
   }, [fetchTasks, projectLoading])
 
   const handleTaskStatusChange = async (taskId: string, newStatus: TaskStatus) => {
-    if (isDemo || !currentProject) {
-      setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t))
-      return
-    }
+    setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t))
+
+    if (isDemo || !currentProject) return
 
     try {
       const res = await fetch(`/api/tasks/${taskId}`, {
@@ -184,28 +183,27 @@ export default function KanbanPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       })
-      if (res.ok) {
+      if (!res.ok) {
         fetchTasks()
       }
     } catch (error) {
       console.error('更新任务状态失败:', error)
+      fetchTasks()
     }
   }
 
   const handleTaskReorder = async (reorderData: { id: string; order: number; status: string; version: number }[]) => {
-    if (isDemo || !currentProject) {
-      setTasks(prevTasks => {
-        const updatedTasks = prevTasks.map(task => {
-          const reorderItem = reorderData.find(item => item.id === task.id)
-          if (reorderItem) {
-            return { ...task, order: reorderItem.order, status: reorderItem.status as TaskStatus }
-          }
-          return task
-        })
-        return updatedTasks
+    setTasks(prevTasks => {
+      return prevTasks.map(task => {
+        const reorderItem = reorderData.find(item => item.id === task.id)
+        if (reorderItem) {
+          return { ...task, order: reorderItem.order, status: reorderItem.status as TaskStatus }
+        }
+        return task
       })
-      return
-    }
+    })
+
+    if (isDemo || !currentProject) return
 
     try {
       const response = await fetch(`/api/projects/${currentProject._id}/tasks/reorder`, {
@@ -225,11 +223,9 @@ export default function KanbanPage() {
       if (!response.ok) {
         throw new Error('保存任务顺序失败')
       }
-
-      fetchTasks()
     } catch (error) {
       console.error('保存任务顺序失败:', error)
-      alert('保存失败，请重试')
+      fetchTasks()
     }
   }
 

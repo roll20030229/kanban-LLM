@@ -5,20 +5,57 @@ import { Column } from './column'
 import {
   DndContext,
   DragOverlay,
-  closestCorners,
+  pointerWithin,
+  closestCenter,
+  rectIntersection,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
+  CollisionDetection,
 } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { TaskCard } from './task-card'
 
 const STATUS_ORDER: TaskStatus[] = ['todo', 'in_progress', 'in_review', 'done']
+
+const kanbanCollisionDetection: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args)
+  const pointerOverTask = pointerCollisions.filter(
+    (c) => !STATUS_ORDER.includes(c.id as TaskStatus) && !(c.id as string).endsWith('-content')
+  )
+  if (pointerOverTask.length > 0) {
+    return pointerOverTask
+  }
+
+  const pointerOverColumn = pointerCollisions.filter((c) =>
+    STATUS_ORDER.includes(c.id as TaskStatus) || (c.id as string).endsWith('-content')
+  )
+  if (pointerOverColumn.length > 0) {
+    return pointerOverColumn
+  }
+
+  const rectCollisions = rectIntersection(args)
+  if (rectCollisions.length > 0) {
+    return rectCollisions
+  }
+
+  return closestCenter(args)
+}
+
+function getColumnStatusFromId(id: string): TaskStatus | null {
+  if (STATUS_ORDER.includes(id as TaskStatus)) return id as TaskStatus
+  if (id.endsWith('-content')) {
+    const status = id.replace('-content', '') as TaskStatus
+    if (STATUS_ORDER.includes(status)) return status
+  }
+  return null
+}
 
 interface DragOverInfo {
   overId: string
@@ -48,11 +85,35 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [dragOverInfo, setDragOverInfo] = useState<DragOverInfo | null>(null)
+  const [localTasks, setLocalTasks] = useState<Task[]>(tasks)
+  const localTasksRef = useRef<Task[]>(tasks)
+  const isDraggingRef = useRef(false)
+
+  const updateLocalTasks = useCallback((updater: (prev: Task[]) => Task[]) => {
+    setLocalTasks(prev => {
+      const next = updater(prev)
+      localTasksRef.current = next
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!isDraggingRef.current) {
+      setLocalTasks(tasks)
+      localTasksRef.current = tasks
+    }
+  }, [tasks])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 1,
+        distance: 3,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -62,11 +123,12 @@ export function KanbanBoard({
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const { active } = event
-    const task = tasks.find((t) => t.id === active.id)
+    isDraggingRef.current = true
+    const task = localTasksRef.current.find((t) => t.id === active.id)
     if (task) {
       setActiveTask(task)
     }
-  }, [tasks])
+  }, [])
 
   const handleDragOver = useCallback((event: DragOverEvent) => {
     const { active, over } = event
@@ -74,43 +136,57 @@ export function KanbanBoard({
 
     const activeId = active.id as string
     const overId = over.id as string
+    const overColumnStatus = getColumnStatusFromId(overId)
 
-    const activeTask = tasks.find((t) => t.id === activeId)
-    if (!activeTask) return
+    updateLocalTasks(prev => {
+      const activeTaskData = prev.find((t) => t.id === activeId)
+      if (!activeTaskData) return prev
 
-    const isOverColumn = STATUS_ORDER.includes(overId as TaskStatus)
-
-    if (isOverColumn) {
-      if (activeTask.status !== overId) {
-        onTaskStatusChange?.(activeId, overId as TaskStatus)
-      }
-      setDragOverInfo(null)
-      return
-    }
-
-    const overTask = tasks.find((t) => t.id === overId)
-    if (overTask) {
-      if (activeTask.status !== overTask.status) {
-        onTaskStatusChange?.(activeId, overTask.status)
+      if (overColumnStatus) {
+        if (activeTaskData.status !== overColumnStatus) {
+          return prev.map(t =>
+            t.id === activeId ? { ...t, status: overColumnStatus } : t
+          )
+        }
+        return prev
       }
 
-      const overRect = over.rect
-      const activeTranslatedRect = active.rect.current.translated
-      if (overRect && activeTranslatedRect) {
-        const overMidY = overRect.top + overRect.height / 2
-        const activeMidY = activeTranslatedRect.top + activeTranslatedRect.height / 2
-        const position = activeMidY < overMidY ? 'above' : 'below'
-        setDragOverInfo({ overId, position })
+      const overTask = prev.find((t) => t.id === overId)
+      if (overTask && activeTaskData.status !== overTask.status) {
+        return prev.map(t =>
+          t.id === activeId ? { ...t, status: overTask.status } : t
+        )
+      }
+
+      return prev
+    })
+
+    const currentTasks = localTasksRef.current
+
+    if (!overColumnStatus) {
+      const overTask = currentTasks.find((t) => t.id === overId)
+      if (overTask) {
+        const overRect = over.rect
+        const activeTranslatedRect = active.rect.current.translated
+        if (overRect && activeTranslatedRect) {
+          const overMidY = overRect.top + overRect.height / 2
+          const activeMidY = activeTranslatedRect.top + activeTranslatedRect.height / 2
+          const position = activeMidY < overMidY ? 'above' : 'below'
+          setDragOverInfo({ overId, position })
+        }
+      } else {
+        setDragOverInfo(null)
       }
     } else {
       setDragOverInfo(null)
     }
-  }, [tasks, onTaskStatusChange])
+  }, [updateLocalTasks])
 
-  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     setActiveTask(null)
     setDragOverInfo(null)
+    isDraggingRef.current = false
 
     if (!over) return
 
@@ -119,50 +195,69 @@ export function KanbanBoard({
 
     if (activeId === overId) return
 
-    const activeTask = tasks.find((t) => t.id === activeId)
-    if (!activeTask) return
+    const currentTasks = localTasksRef.current
+    const activeTaskData = currentTasks.find((t) => t.id === activeId)
+    if (!activeTaskData) return
 
-    const isOverColumn = STATUS_ORDER.includes(overId as TaskStatus)
+    const overColumnStatus = getColumnStatusFromId(overId)
 
-    if (isOverColumn) {
-      const targetStatus = overId as TaskStatus
-      if (activeTask.status === targetStatus) return
+    let reorderData: { id: string; order: number; status: string; version: number }[] = []
+    let statusChanged = false
+    let newStatus: TaskStatus | null = null
 
-      onTaskStatusChange?.(activeId, targetStatus)
+    if (overColumnStatus) {
+      const targetStatus = overColumnStatus
+      statusChanged = activeTaskData.status !== targetStatus
+      newStatus = targetStatus
 
-      const targetColumnTasks = tasks
+      const targetColumnTasks = currentTasks
         .filter(t => t.status === targetStatus)
         .sort((a, b) => a.order - b.order)
 
-      const newColumnTasks = [...targetColumnTasks, { ...activeTask, status: targetStatus }]
+      const overRect = over.rect
+      const activeTranslatedRect = active.rect.current.translated
+      let insertIndex = targetColumnTasks.length
 
-      const reorderData = newColumnTasks.map((task, index) => ({
+      if (overRect && activeTranslatedRect && targetColumnTasks.length > 0) {
+        const overMidY = overRect.top + overRect.height / 2
+        const activeMidY = activeTranslatedRect.top + activeTranslatedRect.height / 2
+        const insertAfter = activeMidY >= overMidY
+
+        if (insertAfter) {
+          insertIndex = targetColumnTasks.length
+        } else {
+          insertIndex = 0
+        }
+      }
+
+      const newColumnTasks = [...targetColumnTasks]
+      newColumnTasks.splice(insertIndex, 0, { ...activeTaskData, status: targetStatus })
+
+      reorderData = newColumnTasks.map((task, index) => ({
         id: task.id,
         order: index,
         status: task.status,
         version: task.version,
       }))
+    } else {
+      const overTask = currentTasks.find((t) => t.id === overId)
+      if (!overTask) return
 
-      onTaskReorder?.(reorderData)
-      return
-    }
+      const overRect = over.rect
+      const activeTranslatedRect = active.rect.current.translated
+      let insertAfter = false
+      if (overRect && activeTranslatedRect) {
+        const overMidY = overRect.top + overRect.height / 2
+        const activeMidY = activeTranslatedRect.top + activeTranslatedRect.height / 2
+        insertAfter = activeMidY >= overMidY
+      }
 
-    const overTask = tasks.find((t) => t.id === overId)
-    if (!overTask) return
+      if (activeTaskData.status !== overTask.status) {
+        statusChanged = true
+        newStatus = overTask.status
+      }
 
-    const overRect = over.rect
-    const activeTranslatedRect = active.rect.current.translated
-    let insertAfter = false
-    if (overRect && activeTranslatedRect) {
-      const overMidY = overRect.top + overRect.height / 2
-      const activeMidY = activeTranslatedRect.top + activeTranslatedRect.height / 2
-      insertAfter = activeMidY >= overMidY
-    }
-
-    if (activeTask.status !== overTask.status) {
-      onTaskStatusChange?.(activeId, overTask.status)
-
-      const targetColumnTasks = tasks
+      const targetColumnTasks = currentTasks
         .filter(t => t.status === overTask.status)
         .sort((a, b) => a.order - b.order)
 
@@ -170,47 +265,26 @@ export function KanbanBoard({
       const insertIndex = insertAfter ? overIndex + 1 : overIndex
 
       const newColumnTasks = [...targetColumnTasks]
-      newColumnTasks.splice(insertIndex, 0, { ...activeTask, status: overTask.status })
+      newColumnTasks.splice(insertIndex, 0, { ...activeTaskData, status: overTask.status })
 
-      const reorderData = newColumnTasks.map((task, index) => ({
+      reorderData = newColumnTasks.map((task, index) => ({
         id: task.id,
         order: index,
         status: task.status,
         version: task.version,
       }))
-
-      onTaskReorder?.(reorderData)
-    } else {
-      const columnTasks = tasks.filter(t => t.status === activeTask.status).sort((a, b) => a.order - b.order)
-      const oldIndex = columnTasks.findIndex(t => t.id === activeId)
-      const overIndex = columnTasks.findIndex(t => t.id === overId)
-
-      if (oldIndex !== -1 && overIndex !== -1) {
-        const newColumnTasks = [...columnTasks]
-        newColumnTasks.splice(oldIndex, 1)
-
-        const adjustedOverIndex = newColumnTasks.findIndex(t => t.id === overId)
-        const insertIndex = insertAfter ? adjustedOverIndex + 1 : adjustedOverIndex
-
-        newColumnTasks.splice(insertIndex, 0, activeTask)
-
-        const reorderData = newColumnTasks.map((task, index) => ({
-          id: task.id,
-          order: index,
-          status: task.status,
-          version: task.version,
-        }))
-
-        onTaskReorder?.(reorderData)
-      }
     }
-  }, [tasks, onTaskStatusChange, onTaskReorder])
 
-  const getTasksByStatus = (status: TaskStatus) => {
-    return tasks
+    if (reorderData.length > 0) {
+      onTaskReorder?.(reorderData)
+    }
+  }, [onTaskReorder])
+
+  const getTasksByStatus = useCallback((status: TaskStatus) => {
+    return localTasks
       .filter((task) => task.status === status)
       .sort((a, b) => a.order - b.order)
-  }
+  }, [localTasks])
 
   if (readOnly) {
     return (
@@ -232,7 +306,7 @@ export function KanbanBoard({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={kanbanCollisionDetection}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
@@ -252,7 +326,7 @@ export function KanbanBoard({
         ))}
       </div>
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeTask ? (
           <TaskCard task={activeTask} isDragging readOnly />
         ) : null}

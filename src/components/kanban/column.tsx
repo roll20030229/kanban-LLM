@@ -9,6 +9,7 @@ import {
   verticalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable'
+import { useDroppable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
 
@@ -78,9 +79,17 @@ export function Column({
     },
   })
 
+  const { setNodeRef: setContentRef, isOver: isContentOver } = useDroppable({
+    id: `${status}-content`,
+    data: {
+      type: 'column-content',
+      status,
+    },
+  })
+
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: 'transform 300ms cubic-bezier(0.2, 0, 0, 1)',
+    transform: CSS.Translate.toString(transform),
+    transition: transition || 'transform 200ms cubic-bezier(0.2, 0, 0, 1)',
     backgroundColor: 'transparent',
   }
 
@@ -97,7 +106,7 @@ export function Column({
         'bg-white/[0.03] border-white/[0.06]',
         columnStyle.glassTint,
         columnStyle.border,
-        isOver && 'ring-2 ring-white/10 ring-offset-2 ring-offset-black'
+        (isOver || isContentOver) && 'ring-2 ring-white/10 ring-offset-2 ring-offset-black'
       )}
     >
       <div className={cn(
@@ -130,6 +139,7 @@ export function Column({
       </div>
 
       <div
+        ref={setContentRef}
         className="flex-1 p-2 space-y-2 overflow-y-auto scrollbar-hide min-h-[200px]"
       >
         <SortableContext
