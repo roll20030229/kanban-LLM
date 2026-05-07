@@ -53,6 +53,8 @@ npm run dev
 
 | Tool名称 | 功能 | 参数 |
 |---------|------|------|
+| `create_project` | 创建新项目（支持自动拆解模块任务） | `name`, `description?`, `milestones?`, `modules?` |
+| `update_project` | 更新项目信息 | `projectId`, `name?`, `description?`, `milestones?` |
 | `list_projects` | 列出所有项目 | 无 |
 | `get_project` | 获取项目详情 | `projectId` |
 | `list_tasks` | 查询任务列表 | `projectId`, `status?`, `assignee?`, `priority?` |
@@ -63,6 +65,11 @@ npm run dev
 | `get_project_stats` | 获取项目统计 | `projectId` |
 
 ## 使用示例
+
+### 创建项目（自动拆解任务）
+```
+帮我创建一个电商系统项目，包含前端开发、后端API、数据库设计模块
+```
 
 ### 查看项目
 ```
@@ -82,6 +89,11 @@ npm run dev
 ### 更新任务
 ```
 将任务 xxx 的状态改为进行中
+```
+
+### 更新项目
+```
+更新项目 xxx 的描述为"新版电商系统"
 ```
 
 ### 查看统计
@@ -140,3 +152,65 @@ MCP接口也复用NextAuth认证。确保您已登录Kanban系统，Trae将使�
 ### 工具调用失败
 1. 检查参数是否正确
 2. 查看控制台日志获取详细错误信息
+
+## 跨项目同步配置
+
+Vibe Kanban 支持在 Trae 中创建的任何项目自动同步到看板，不仅限于 Kanban 项目本身。
+
+### 前提条件
+
+1. **Kanban 服务持续运行**：确保 `http://localhost:3000` 可访问
+2. **MCP 全局配置**：MCP 连接已配置在 Trae 全局设置中（非项目级别）
+
+### 配置步骤
+
+#### 1. 确认 MCP 全局配置
+
+MCP 配置文件位于：`%APPDATA%\Trae CN\User\mcp.json`
+
+确保内容包含：
+```json
+{
+  "mcpServers": {
+    "vibe-kanban": {
+      "url": "http://localhost:3000/api/mcp/sse",
+      "name": "Vibe Kanban",
+      "description": "项目管理看板系统"
+    }
+  }
+}
+```
+
+这样配置后，**所有 Trae 项目**都可以访问 Kanban MCP 工具。
+
+#### 2. 配置个人规则（全局生效）
+
+在 Trae 中添加个人规则，使所有项目都自动同步到 Kanban：
+
+1. 点击 Trae 右上角 **设置** 图标
+2. 在左侧导航栏选择 **规则和技能**
+3. 在 **个人规则** 部分，点击 **+ 创建 user_rules.md**
+4. 将 `.trae/rules/user_rules_template.md` 的内容复制到 `user_rules.md` 中
+5. 保存文件
+
+配置完成后，无论你在 Trae 中打开哪个项目，AI 都会：
+- 自动识别项目信息（名称、描述、模块结构）
+- 询问你是否同步到 Kanban
+- 你确认后自动创建项目和拆解任务
+
+#### 3. 新项目工作流
+
+当你在 Trae 中创建一个新项目时：
+
+```
+1. 打开新项目目录
+2. AI 自动识别项目信息
+3. AI 询问："检测到新项目 [项目名]，是否同步到 Kanban？"
+4. 你确认后，AI 调用 create_project 创建项目和模块任务
+5. 开始开发时，AI 自动将对应任务状态改为 in_progress
+6. 模块完成时，AI 自动将任务状态改为 in_review
+```
+
+#### 4. 为新项目添加项目级规则（可选）
+
+如果你希望某个项目有更细粒度的同步规则，可以在该项目根目录创建 `.trae/rules/project_rules.md`，将 Kanban 项目的规则模板复制过去即可。
