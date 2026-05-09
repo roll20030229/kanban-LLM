@@ -24,6 +24,19 @@ export interface Project {
   createdAt: Date
 }
 
+export interface Subtask {
+  id: string
+  title: string
+  completed: boolean
+}
+
+export interface DevLog {
+  id: string
+  author: string
+  content: string
+  createdAt: Date
+}
+
 export type TaskStatus = 'todo' | 'in_progress' | 'in_review' | 'done'
 export type TaskPriority = 'low' | 'medium' | 'high'
 
@@ -37,6 +50,8 @@ export interface Task {
   assignee?: string
   dueDate?: Date
   tags?: string[]
+  subtasks?: Subtask[]
+  devLogs?: DevLog[]
   order: number
   version: number
   createdAt: Date

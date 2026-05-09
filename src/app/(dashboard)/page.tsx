@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { KanbanBoard } from '@/components/kanban'
 import { Header, TaskForm, AIConfigDialog } from '@/components/dashboard'
 import { AIAssistant } from '@/components/dashboard/ai-assistant'
@@ -82,6 +83,7 @@ const demoTasks: Task[] = [
 ]
 
 export default function KanbanPage() {
+  const router = useRouter()
   const { currentProject, loading: projectLoading } = useProject()
   const [tasks, setTasks] = useState<Task[]>(demoTasks)
   const [loading, setLoading] = useState(true)
@@ -236,8 +238,10 @@ export default function KanbanPage() {
   }
 
   const handleEditTask = (task: Task) => {
-    setSelectedTask(task)
-    setTaskFormOpen(true)
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(`task-${task.id}`, JSON.stringify(task))
+    }
+    router.push(`/tasks/${task.id}`)
   }
 
   const handleDeleteTask = async (taskId: string) => {

@@ -341,7 +341,7 @@ function useAuroraEffect(
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseleave', handleMouseLeave)
     }
-  }, [init, calculateWaveY])
+  }, [init, calculateWaveY, canvasRef, dotCanvasRef])
 
   return null
 }

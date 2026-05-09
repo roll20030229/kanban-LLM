@@ -1,6 +1,19 @@
 import mongoose from 'mongoose'
 import { TaskStatus, TaskPriority } from '@/types'
 
+const SubtaskSchema = new mongoose.Schema({
+  id: { type: String, required: true, default: () => new mongoose.Types.ObjectId().toString() },
+  title: { type: String, required: true },
+  completed: { type: Boolean, default: false },
+}, { _id: false })
+
+const DevLogSchema = new mongoose.Schema({
+  id: { type: String, required: true, default: () => new mongoose.Types.ObjectId().toString() },
+  author: { type: String, required: true },
+  content: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+}, { _id: false })
+
 const TaskSchema = new mongoose.Schema({
   projectId: { type: String, required: true, index: true },
   title: { type: String, required: true },
@@ -19,6 +32,8 @@ const TaskSchema = new mongoose.Schema({
   assignee: { type: String },
   dueDate: { type: Date },
   tags: [{ type: String }],
+  subtasks: [SubtaskSchema],
+  devLogs: [DevLogSchema],
   order: { type: Number, default: 0 },
   version: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },

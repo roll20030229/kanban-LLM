@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { mcpSessions } from "@/app/api/mcp/sse/route"
+import { mcpSessions } from "@/lib/mcp/sessions"
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,8 +18,6 @@ export async function POST(request: NextRequest) {
     mcpSession.lastActivity = new Date()
 
     const body = await request.json()
-    console.log("MCP POST received:", body)
-    
     mcpSession.transport.handleMessage(body as any)
 
     return NextResponse.json({ success: true })

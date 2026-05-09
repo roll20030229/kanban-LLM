@@ -8,7 +8,6 @@ import { projectSchema } from '@/lib/validations'
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
-    console.log('Session in GET /api/projects:', JSON.stringify(session, null, 2))
     if (!session?.user?.id) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 })
     }

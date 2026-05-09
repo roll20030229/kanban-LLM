@@ -436,3 +436,102 @@ body {
   backface-visibility: hidden;
   perspective: 1000px;
 }
+
+/* Markdown 编辑器暗色主题覆盖 */
+.w-md-editor {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.w-md-editor-toolbar {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.w-md-editor-toolbar li > button {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.w-md-editor-toolbar li > button:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.w-md-editor-text-pre > code,
+.w-md-editor-text-input,
+.w-md-editor-text {
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.w-md-editor-preview {
+  background-color: transparent !important;
+}
+
+.wmde-markdown {
+  background-color: transparent !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 13px !important;
+}
+
+.wmde-markdown h1,
+.wmde-markdown h2,
+.wmde-markdown h3,
+.wmde-markdown h4,
+.wmde-markdown h5,
+.wmde-markdown h6 {
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.wmde-markdown code {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-radius: 4px !important;
+  padding: 2px 6px !important;
+}
+
+.wmde-markdown pre {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 8px !important;
+}
+
+.wmde-markdown pre code {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+.wmde-markdown blockquote {
+  border-left-color: rgba(79, 143, 255, 0.4) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.wmde-markdown a {
+  color: #4f8fff !important;
+}
+
+.wmde-markdown table th {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.wmde-markdown table td {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.wmde-markdown hr {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.wmde-markdown img {
+  border-radius: 8px !important;
+}
+
+.w-md-editor-scrollbar-left::-webkit-scrollbar-thumb,
+.w-md-editor-scrollbar-right::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12) !important;
+}

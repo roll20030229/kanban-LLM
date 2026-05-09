@@ -192,7 +192,7 @@ export const TaskCard = memo(function TaskCard({ task, onClick, onDelete, isDrag
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={onClick}>编辑</DropdownMenuItem>
+                    <DropdownMenuItem onClick={onClick}>查看详情</DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-red-400 focus:text-red-400"
                       onClick={handleDelete}
