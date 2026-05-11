@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
+import mongoose from "mongoose"
 import { connectDB } from "@/lib/db"
 import Project from "@/models/project"
 import Task from "@/models/task"
@@ -530,6 +531,96 @@ mcpServer.tool(
     } catch (error) {
       return {
         content: [{ type: "text", text: JSON.stringify({ error: "删除任务失败", details: String(error) }) }],
+        isError: true,
+      }
+    }
+  }
+)
+
+mcpServer.tool(
+  "add_dev_log",
+  "为任务添加开发日志，记录关键开发节点。AI Agent在开发过程中应在以下时机自动调用：开始开发模块(start)、做出技术/架构决策(decision)、遇到问题(problem)、修复Bug(fix)、重要重构(refactor)、模块开发完成(complete)",
+  {
+    taskId: z.string().describe("任务ID"),
+    eventType: z.enum(["start", "decision", "problem", "fix", "refactor", "complete"]).describe("事件类型：start=开始开发, decision=技术决策, problem=遇到问题, fix=Bug修复, refactor=重构, complete=模块完成"),
+    content: z.string().describe("日志内容，简洁摘要，类似Git commit message风格"),
+    author: z.string().describe("作者标识，格式建议：Agent类型-用户名，如 Trae-张三、Cursor-李四"),
+  },
+  async ({ taskId, eventType, content, author }) => {
+    try {
+      const session = await auth()
+      if (!session?.user?.id) {
+        return {
+          content: [{ type: "text", text: JSON.stringify({ error: "未授权，请先登录" }) }],
+          isError: true,
+        }
+      }
+
+      await connectDB()
+      const task = await Task.findById(taskId)
+
+      if (!task) {
+        return {
+          content: [{ type: "text", text: JSON.stringify({ error: "任务不存在" }) }],
+          isError: true,
+        }
+      }
+
+      const project = await Project.findOne({
+        _id: task.projectId,
+        members: session.user.id
+      })
+
+      if (!project) {
+        return {
+          content: [{ type: "text", text: JSON.stringify({ error: "无权限访问此任务" }) }],
+          isError: true,
+        }
+      }
+
+      const devLog = {
+        id: new mongoose.Types.ObjectId().toString(),
+        eventType,
+        author,
+        content: content.trim(),
+        createdAt: new Date(),
+      }
+
+      const updatedTask = await Task.findByIdAndUpdate(
+        taskId,
+        { $push: { devLogs: devLog }, updatedAt: new Date() },
+        { new: true }
+      )
+
+      const eventTypeLabels: Record<string, string> = {
+        start: "开始开发",
+        decision: "技术决策",
+        problem: "遇到问题",
+        fix: "Bug修复",
+        refactor: "重构",
+        complete: "模块完成",
+      }
+
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            message: "开发日志添加成功",
+            devLog: {
+              id: devLog.id,
+              eventType: devLog.eventType,
+              eventLabel: eventTypeLabels[devLog.eventType] || devLog.eventType,
+              author: devLog.author,
+              content: devLog.content,
+              createdAt: devLog.createdAt,
+            },
+            taskDevLogCount: updatedTask?.devLogs?.length || 0,
+          }, null, 2)
+        }],
+      }
+    } catch (error) {
+      return {
+        content: [{ type: "text", text: JSON.stringify({ error: "添加开发日志失败", details: String(error) }) }],
         isError: true,
       }
     }

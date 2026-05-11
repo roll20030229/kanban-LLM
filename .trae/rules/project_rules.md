@@ -90,7 +90,72 @@ update_task({ taskId: "yyy", status: "in_progress" })
 
 ### 执行步骤
 1. 使用 `update_task` 将任务状态改为 `in_review`
-2. 向用户简要汇报该模块已完成，等待验收
+2. 调用 `add_dev_log` 写入一条 `complete` 类型的开发日志
+3. 向用户简要汇报该模块已完成，等待验收
+
+## 规则四-B：开发日志自动写入
+
+AI 在开发过程中，必须在关键节点自动调用 `add_dev_log` 工具写入开发日志，实现开发过程可追溯。这是强制性行为，无需每次询问用户。
+
+### 事件类型与触发时机
+
+| eventType | 触发时机 | 日志内容示例 |
+|-----------|---------|-------------|
+| `start` | 开始编写某个模块的代码时 | "开始开发用户认证模块，采用 JWT + Session 双模式" |
+| `decision` | 做出技术选型、架构设计等决策时 | "选择 Redis 作为会话存储，理由：高并发场景下性能优于内存存储" |
+| `problem` | 开发过程中遇到阻碍性问题时 | "跨域请求被浏览器拦截，需配置 CORS 中间件" |
+| `fix` | 修复 Bug 或解决上述问题时 | "修复用户注册时邮箱校验未生效的问题，原因是正则表达式写反" |
+| `refactor` | 进行重要代码重构时 | "将认证逻辑从路由层抽离为独立中间件，提升复用性" |
+| `complete` | 模块开发完成时（与规则四联动） | "用户认证模块开发完成，包含登录/注册/密码重置功能" |
+
+### author 字段格式
+
+`author` 参数用于标识日志的写入者，格式为 `Agent类型-用户名`：
+- 使用 Trae 的用户：`Trae-张三`
+- 使用 Cursor 的用户：`Cursor-李四`
+- 使用其他 Agent 的用户：`AgentType-用户名`
+
+AI 应在首次对话时询问用户的名称偏好，或从项目配置中读取。如果无法确定，使用 `Trae-用户` 作为默认值。
+
+### 执行步骤
+
+1. **识别关键节点**：在开发过程中自动判断当前是否处于上述触发时机
+2. **查找对应任务**：使用 `list_tasks` 找到当前模块对应的任务
+3. **写入开发日志**：调用 `add_dev_log`，传入 taskId、eventType、content、author
+4. **与状态同步联动**：`start` 事件与 `update_task({ status: "in_progress" })` 联动，`complete` 事件与 `update_task({ status: "in_review" })` 联动
+
+### 示例
+
+当 AI 开始编写用户认证模块代码时：
+```
+// 1. 更新任务状态
+update_task({ taskId: "yyy", status: "in_progress" })
+
+// 2. 写入开发日志
+add_dev_log({
+  taskId: "yyy",
+  eventType: "start",
+  content: "开始开发用户认证模块，采用 JWT + Session 双模式",
+  author: "Trae-张三"
+})
+```
+
+当 AI 做出技术选型决策时：
+```
+add_dev_log({
+  taskId: "yyy",
+  eventType: "decision",
+  content: "选择 Redis 作为会话存储，理由：高并发场景下性能优于内存存储",
+  author: "Trae-张三"
+})
+```
+
+### 写入原则
+
+- **简洁摘要**：日志内容应类似 Git commit message 风格，简洁明了，一句话说清楚
+- **决策留痕**：技术决策类日志必须包含决策理由，方便后续追溯
+- **问题闭环**：`problem` 和 `fix` 应成对出现，问题记录后解决时也要记录
+- **避免冗余**：不要为每个小改动都写日志，只在关键节点写入
 
 ## 规则五：手动指令支持
 
@@ -103,6 +168,8 @@ update_task({ taskId: "yyy", status: "in_progress" })
 | "把XX任务改为已完成" | update_task({ status: "done" }) |
 | "查看项目进度" | get_project_stats |
 | "查看所有任务" | list_tasks |
+| "写一条开发日志" | add_dev_log({ eventType, content, author }) |
+| "查看XX任务的开发日志" | get_task({ taskId }) 查看devLogs字段 |
 
 ## 规则六：项目上下文管理
 

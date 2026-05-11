@@ -9,6 +9,7 @@ const SubtaskSchema = new mongoose.Schema({
 
 const DevLogSchema = new mongoose.Schema({
   id: { type: String, required: true, default: () => new mongoose.Types.ObjectId().toString() },
+  eventType: { type: String, enum: ['start', 'decision', 'problem', 'fix', 'refactor', 'complete'], default: 'start' },
   author: { type: String, required: true },
   content: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },

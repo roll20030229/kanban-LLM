@@ -62,6 +62,7 @@ npm run dev
 | `create_task` | 创建新任务 | `projectId`, `title`, `description?`, `status?`, `priority?`, `assignee?`, `dueDate?`, `tags?` |
 | `update_task` | 更新任务 | `taskId`, 更新字段 |
 | `delete_task` | 删除任务 | `taskId` |
+| `add_dev_log` | 添加开发日志 | `taskId`, `eventType`, `content`, `author` |
 | `get_project_stats` | 获取项目统计 | `projectId` |
 
 ## 使用示例
@@ -100,6 +101,36 @@ npm run dev
 ```
 显示项目 xxx 的统计信息
 ```
+
+### 添加开发日志
+
+AI Agent 在开发过程中会自动在关键节点写入开发日志，也可以手动触发：
+
+```
+为任务 xxx 添加一条开发日志：开始开发用户认证模块
+```
+
+```
+为任务 xxx 记录一个技术决策：选择 Redis 作为会话存储
+```
+
+#### eventType 参数说明
+
+| eventType | 含义 | 使用场景 |
+|-----------|------|---------|
+| `start` | 开始开发 | AI 开始编写某个模块的代码时 |
+| `decision` | 技术决策 | 做出技术选型、架构设计等决策时 |
+| `problem` | 遇到问题 | 开发过程中遇到阻碍性问题时 |
+| `fix` | Bug修复 | 修复 Bug 或解决上述问题时 |
+| `refactor` | 重构 | 进行重要代码重构时 |
+| `complete` | 模块完成 | 模块开发完成时 |
+
+#### author 参数格式
+
+格式为 `Agent类型-用户名`，用于区分不同团队成员的 AI Agent 写入的日志：
+- 使用 Trae 的用户：`Trae-张三`
+- 使用 Cursor 的用户：`Cursor-李四`
+- 使用其他 Agent 的用户：`AgentType-用户名`
 
 ## 认证
 
@@ -207,9 +238,12 @@ MCP 配置文件位于：`%APPDATA%\Trae CN\User\mcp.json`
 2. AI 自动识别项目信息
 3. AI 询问："检测到新项目 [项目名]，是否同步到 Kanban？"
 4. 你确认后，AI 调用 create_project 创建项目和模块任务
-5. 开始开发时，AI 自动将对应任务状态改为 in_progress
-6. 模块完成时，AI 自动将任务状态改为 in_review
+5. 开始开发时，AI 自动将对应任务状态改为 in_progress，并写入 start 类型开发日志
+6. 开发过程中，AI 在关键节点自动写入开发日志（技术决策、遇到问题、Bug修复、重构等）
+7. 模块完成时，AI 自动将任务状态改为 in_review，并写入 complete 类型开发日志
 ```
+
+这样团队成员可以通过查看任务的开发日志，了解每个模块的完整开发过程和决策依据，实现追根溯源。
 
 #### 4. 为新项目添加项目级规则（可选）
 

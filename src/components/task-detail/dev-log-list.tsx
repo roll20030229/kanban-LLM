@@ -1,8 +1,8 @@
 'use client'
 
-import { DevLog } from '@/types'
+import { DevLog, DevLogEventType } from '@/types'
 import { cn, formatDate } from '@/lib/utils'
-import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Trash2, ChevronDown, ChevronUp, Play, Lightbulb, AlertTriangle, Wrench, RefreshCw, CheckCircle2 } from 'lucide-react'
 import { useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 
@@ -15,6 +15,15 @@ const MDPreview = dynamic(
   () => import('@uiw/react-markdown-preview').then((mod) => mod.default),
   { ssr: false }
 )
+
+const eventTypeConfig: Record<DevLogEventType, { label: string; icon: typeof Play; bg: string; text: string; border: string }> = {
+  start: { label: '开始开发', icon: Play, bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' },
+  decision: { label: '技术决策', icon: Lightbulb, bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' },
+  problem: { label: '遇到问题', icon: AlertTriangle, bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30' },
+  fix: { label: 'Bug修复', icon: Wrench, bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30' },
+  refactor: { label: '重构', icon: RefreshCw, bg: 'bg-cyan-500/15', text: 'text-cyan-400', border: 'border-cyan-500/30' },
+  complete: { label: '模块完成', icon: CheckCircle2, bg: 'bg-green-500/15', text: 'text-green-400', border: 'border-green-500/30' },
+}
 
 interface DevLogListProps {
   taskId: string
@@ -29,6 +38,7 @@ let _devLogCounter = 2000
 export function DevLogList({ taskId, devLogs, onUpdate, currentUser, isDemo }: DevLogListProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [newContent, setNewContent] = useState('')
+  const [newEventType, setNewEventType] = useState<DevLogEventType>('start')
   const [submitting, setSubmitting] = useState(false)
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
 
@@ -53,6 +63,7 @@ export function DevLogList({ taskId, devLogs, onUpdate, currentUser, isDemo }: D
     if (isDemo) {
       const newLog: DevLog = {
         id: `devlog-${++_devLogCounter}`,
+        eventType: newEventType,
         author: currentUser || '演示用户',
         content: newContent.trim(),
         createdAt: new Date(),
@@ -67,7 +78,7 @@ export function DevLogList({ taskId, devLogs, onUpdate, currentUser, isDemo }: D
       const res = await fetch(`/api/tasks/${taskId}/dev-logs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newContent.trim() }),
+        body: JSON.stringify({ content: newContent.trim(), eventType: newEventType }),
       })
       if (res.ok) {
         const newLog = await res.json()
@@ -80,7 +91,7 @@ export function DevLogList({ taskId, devLogs, onUpdate, currentUser, isDemo }: D
     } finally {
       setSubmitting(false)
     }
-  }, [taskId, newContent, devLogs, onUpdate, isDemo, currentUser])
+  }, [taskId, newContent, newEventType, devLogs, onUpdate, isDemo, currentUser])
 
   const handleDelete = useCallback(async (logId: string) => {
     if (isDemo) {
@@ -116,6 +127,27 @@ export function DevLogList({ taskId, devLogs, onUpdate, currentUser, isDemo }: D
 
       {isAdding && (
         <div className="rounded-[12px] bg-white/[0.03] border border-white/[0.08] overflow-hidden">
+          <div className="flex items-center gap-2 px-3 pt-3">
+            {(Object.keys(eventTypeConfig) as DevLogEventType[]).map((type) => {
+              const config = eventTypeConfig[type]
+              const Icon = config.icon
+              return (
+                <button
+                  key={type}
+                  onClick={() => setNewEventType(type)}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-1 rounded-[6px] text-[11px] transition-all border',
+                    newEventType === type
+                      ? `${config.bg} ${config.text} ${config.border}`
+                      : 'bg-transparent text-white/40 border-transparent hover:bg-white/[0.04]'
+                  )}
+                >
+                  <Icon className="h-3 w-3" />
+                  {config.label}
+                </button>
+              )
+            })}
+          </div>
           <div className="p-3">
             <MDEditor
               value={newContent}
@@ -155,6 +187,9 @@ export function DevLogList({ taskId, devLogs, onUpdate, currentUser, isDemo }: D
           const displayContent = shouldTruncate && !isExpanded
             ? log.content.slice(0, 200) + '...'
             : log.content
+          const logEventType = log.eventType || 'start'
+          const config = eventTypeConfig[logEventType]
+          const EventIcon = config.icon
 
           return (
             <div
@@ -163,6 +198,13 @@ export function DevLogList({ taskId, devLogs, onUpdate, currentUser, isDemo }: D
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.04]">
                 <div className="flex items-center gap-2.5">
+                  <span className={cn(
+                    'flex items-center gap-1 px-2 py-0.5 rounded-[6px] text-[11px] font-medium border',
+                    config.bg, config.text, config.border
+                  )}>
+                    <EventIcon className="h-3 w-3" />
+                    {config.label}
+                  </span>
                   <div className="w-6 h-6 rounded-full bg-white/[0.08] flex items-center justify-center text-[10px] text-white/60 font-medium">
                     {log.author.charAt(0).toUpperCase()}
                   </div>

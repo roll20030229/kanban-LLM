@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Search, Filter, Bot, ChevronDown } from 'lucide-react'
+import { Plus, Search, Filter, Bot, ChevronDown, Plug } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -21,6 +21,7 @@ import {
 import { useProject } from '@/contexts/project-context'
 import { ProjectSwitcher } from './project-switcher'
 import { Breadcrumb } from './breadcrumb'
+import { McpConfigDialog } from './mcp-config-dialog'
 import { useKeyboardShortcutWithModifier } from '@/hooks/use-keyboard-shortcut'
 
 interface HeaderProps {
@@ -34,6 +35,7 @@ interface HeaderProps {
 export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [switcherOpen, setSwitcherOpen] = useState(false)
+  const [mcpConfigOpen, setMcpConfigOpen] = useState(false)
   const { currentProject, getProjectColor } = useProject()
 
   const handleSearch = (value: string) => {
@@ -110,6 +112,24 @@ export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI }:
               <Button
                 size="sm"
                 variant="outline"
+                className="h-9 w-9 p-0 border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12]"
+                onClick={() => setMcpConfigOpen(true)}
+              >
+                <Plug className="h-4 w-4 text-white/60" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              MCP连接配置
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
                 className="h-9 w-9 p-0"
                 onClick={onOpenAI}
               >
@@ -128,6 +148,8 @@ export function Header({ projectName, onNewTask, onSearch, onFilter, onOpenAI }:
         </Button>
       </div>
     </header>
+
+    <McpConfigDialog open={mcpConfigOpen} onOpenChange={setMcpConfigOpen} />
     </>
   )
 }

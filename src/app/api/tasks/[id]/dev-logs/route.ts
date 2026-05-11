@@ -14,15 +14,20 @@ export async function POST(
       return NextResponse.json({ error: '未授权' }, { status: 401 })
     }
 
-    const { content } = await request.json()
+    const { content, eventType, author } = await request.json()
     if (!content || !content.trim()) {
       return NextResponse.json({ error: '日志内容不能为空' }, { status: 400 })
     }
 
+    const validEventTypes = ['start', 'decision', 'problem', 'fix', 'refactor', 'complete']
+    const resolvedEventType = validEventTypes.includes(eventType) ? eventType : 'start'
+    const resolvedAuthor = author || session.user.name || session.user.email || '未知用户'
+
     await connectDB()
     const devLog = {
       id: new mongoose.Types.ObjectId().toString(),
-      author: session.user.name || session.user.email || '未知用户',
+      eventType: resolvedEventType,
+      author: resolvedAuthor,
       content: content.trim(),
       createdAt: new Date(),
     }

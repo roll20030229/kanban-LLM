@@ -30,8 +30,11 @@ export interface Subtask {
   completed: boolean
 }
 
+export type DevLogEventType = 'start' | 'decision' | 'problem' | 'fix' | 'refactor' | 'complete'
+
 export interface DevLog {
   id: string
+  eventType: DevLogEventType
   author: string
   content: string
   createdAt: Date

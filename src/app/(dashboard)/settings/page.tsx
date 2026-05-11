@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Copy, Check, Trash2, AlertCircle, Bot, Save, Eye, EyeOff } from 'lucide-react'
+import { Copy, Check, Trash2, AlertCircle, Bot, Save, Eye, EyeOff, Plug } from 'lucide-react'
 import { AIModelType, AI_MODEL_OPTIONS } from '@/types'
 import { useProject } from '@/contexts/project-context'
+import { McpConfigDialog } from '@/components/dashboard/mcp-config-dialog'
 
 interface AIConfig {
   enabled: boolean
@@ -38,6 +39,7 @@ export default function SettingsPage() {
   const [aiSaving, setAISaving] = useState(false)
   const [aiSaved, setAISaved] = useState(false)
   const [showApiKey, setShowApiKey] = useState(false)
+  const [mcpConfigOpen, setMcpConfigOpen] = useState(false)
 
   const fetchAIConfig = useCallback(async () => {
     try {
@@ -269,6 +271,40 @@ export default function SettingsPage() {
 
       <Card className="border-white/[0.06] bg-white/[0.02] backdrop-blur-[30px] shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
         <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-white/90">
+            <Plug className="h-5 w-5 text-white/50" />
+            MCP 连接配置
+          </CardTitle>
+          <CardDescription className="text-white/35 text-sm">
+            配置 AI Agent（Trae、Cursor 等）与 Kanban 的 MCP 连接，实现项目进度自动同步和开发日志写入
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 rounded-[12px] bg-white/[0.02] border border-white/[0.06]">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-white/40 animate-pulse" />
+                <span className="text-sm text-white/60">MCP 服务已就绪</span>
+              </div>
+              <p className="text-xs text-white/30 mt-1.5">
+                SSE 地址：{typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/api/mcp/sse
+              </p>
+            </div>
+            <Button
+              onClick={() => setMcpConfigOpen(true)}
+              className="bg-white/[0.06] text-white/70 hover:bg-white/[0.10] border border-white/[0.1] hover:border-white/[0.15]"
+            >
+              <Plug className="h-4 w-4 mr-1.5" />
+              获取配置
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Separator className="bg-white/[0.06]" />
+
+      <Card className="border-white/[0.06] bg-white/[0.02] backdrop-blur-[30px] shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
+        <CardHeader>
           <CardTitle className="text-white/90">项目列表</CardTitle>
           <CardDescription className="text-white/35 text-sm">
             管理您的所有项目。新建项目请点击左侧导航栏的 + 按钮。
@@ -325,6 +361,8 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      <McpConfigDialog open={mcpConfigOpen} onOpenChange={setMcpConfigOpen} />
     </div>
   )
 }

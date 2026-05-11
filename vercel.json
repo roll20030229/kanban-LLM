@@ -1,0 +1,12 @@
+{
+  "framework": "nextjs",
+  "regions": ["hkg1"],
+  "functions": {
+    "src/app/api/mcp/sse/route.ts": {
+      "maxDuration": 300
+    },
+    "src/app/api/mcp/rpc/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

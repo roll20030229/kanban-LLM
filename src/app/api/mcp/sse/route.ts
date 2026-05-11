@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { getOrCreateMcpServer } from "@/lib/mcp/sessions"
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 300
 
 export async function GET(request: NextRequest) {
   try {
